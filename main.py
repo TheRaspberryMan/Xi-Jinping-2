@@ -131,6 +131,10 @@ async def on_member_remove(member):
 @bot.event
 async def on_ready():
 
+    # getting the server
+    global guild
+    guild = bot.get_guild(739522722169618516)
+
     # variables for on_message, put here to make it look cleaner
     global last_author
     global messages
@@ -139,7 +143,7 @@ async def on_ready():
     global emoji_channel
     
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
-    emoji_channel = discord.get_channel(740299204307714216)
+    emoji_channel = bot.get_channel(740299204307714216)
     messages = 0
     last_author = ''
     last_time = 0
@@ -152,10 +156,8 @@ async def on_ready():
     print(f"Got channel {game_deals}\n")
     old_games = []
 
-    # getting the server
     
     
-    guild = bot.get_guild(739522722169618516)
 
 
 
