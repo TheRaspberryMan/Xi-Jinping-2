@@ -136,6 +136,14 @@ async def on_ready():
     global messages
     global muterole
     global last_time
+    global emoji_channel
+    
+    muterole = discord.utils.get(guild.roles, id=739538288255303710)
+    emoji_channel = discord.get_channel(740299204307714216)
+    messages = 0
+    last_author = ''
+    last_time = 0
+
 
     # variables for free game check
     global old_games
@@ -145,14 +153,11 @@ async def on_ready():
     old_games = []
 
     # getting the server
-    global guild
+    
+    
     guild = bot.get_guild(739522722169618516)
 
 
-    muterole = discord.utils.get(guild.roles, id=739538288255303710)
-    messages = 0
-    last_author = ''
-    last_time = 0
 
 
     # generates json
@@ -416,16 +421,16 @@ async def bomb(ctx):
 @tasks.loop(hours=1)
 async def called_on_thursday():
     global old_games
+    global game_deals
 
     # Gets the message channel to send to 
-    message_channel = bot.get_channel(739529274964574360)
-    print(f"Got channel {message_channel}\n")
+   
     
     hour = datetime.today().hour
     # Checks if it is thursday and sends reminder
     if datetime.today().weekday() == 3 and (hour == 11):
 
-        await message_channel.send("@everyone New Epic Time Gaming Time Epic time Gaming Time Epic free time gaming ")
+        await game_deals.send("@everyone New Epic Time Gaming Time Epic time Gaming Time Epic free time gaming ")
 
 
     HEADERS = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
@@ -462,7 +467,7 @@ async def called_on_thursday():
                 old_games.append(row[0])
                 
                 
-                await message_channel.send(f'@everyone {row[0]} is free on steam')
+                await game_deals.send(f'@everyone {row[0]} is free on steam')
 
 # lowers offences and unmutes people             
 @tasks.loop(seconds=30)
