@@ -50,7 +50,6 @@ async def change_ping_bucks(member_id, amount, channel, add_or_remove):
     add_or_remove_message = 'added' if add_or_remove else 'removed'
     await channel.send(f'{amount} ping bucks have been {add_or_remove_message} to your ping bank account')
 
-
 #takes a PIL image and sends it to a channel
 async def send_image(image, channel):
 
@@ -58,7 +57,6 @@ async def send_image(image, channel):
             image.save(image_binary, 'PNG')
             image_binary.seek(0)
             await channel.send(file=discord.File(fp=image_binary, filename='background.png'))
-
 
 @bot.event
 async def on_member_join(member):
@@ -91,7 +89,6 @@ async def on_member_join(member):
 
     await joins_and_leaves_channel.send(f"OH BLESSED DAY {member.name.upper()} HAS JOINED OUR MIGHTY EMPIRE") 
 
-
 @bot.event    
 async def on_member_remove(member):
 
@@ -108,6 +105,11 @@ async def on_member_remove(member):
         json.dump(user_data, user_data_file)
 
     await joins_and_leaves_channel.send(f"{member.name} has left, how dismal")
+
+@bot.event
+async def on_ready():
+    print("I'm ready to ping some pongs")
+
 
 #MUTING AND UNMUTING
 #text chat control and muting
@@ -270,6 +272,8 @@ async def whos_that_pokemon(ctx):
 f = open("token.txt", "r") # get key
 # Use test token if testing new features
 TOKEN = f.readline()
+print(TOKEN)
 TEST_TOKEN = f.readline()
 f.close()
+
 bot.run(str(TOKEN))
