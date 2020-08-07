@@ -137,9 +137,15 @@ async def on_ready():
     global muterole
     global last_time
 
+    # variables for free game check
+    global old_games
+    global game_deals
+    game_deals = bot.get_channel(739529274964574360)
+    print(f"Got channel {game_deals}\n")
+    old_games = []
+
     # getting the server
     global guild
-
     guild = bot.get_guild(739522722169618516)
 
 
@@ -148,9 +154,6 @@ async def on_ready():
     last_author = ''
     last_time = 0
 
-    # variable for free game check
-    global old_games
-    old_games = []
 
     # generates json
     for member in guild.members:
@@ -410,58 +413,6 @@ async def bomb(ctx):
         continue
     await voice.disconnect()
 
-@bot.command()
-async def test(ctx):
-    global old_games
-
-    # Gets the message channel to send to 
-    message_channel = bot.get_channel(739529274964574360)
-    print(f"Got channel {message_channel}\n")
-    
-    hour = datetime.today().hour
-    # Checks if it is thursday and sends reminder
-    if datetime.today().weekday() == 3 and (hour == 11):
-
-        await message_channel.send("@everyone New Epic Time Gaming Time Epic time Gaming Time Epic free time gaming ")
-
-
-    HEADERS = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
-
-    request = get("https://steamdb.info/sales/", timeout=10, headers=HEADERS)
-
-
-
-    html = BeautifulSoup(request.content, 'html.parser')
-
-    discounts = html.find_all('tr')
-
-    row_lst = [discount for discount in discounts]
-    row_lst.pop(0)
-
-    row_lst_clean = []
-
-
-    for row in row_lst:
-        indivdual_row = []
-        for string in row.stripped_strings:
-            indivdual_row.append(string)
-        row_lst_clean.append(indivdual_row)
-
-
-    
-
-    for row in row_lst_clean:
-        for element in row:
-            
-            if element == '$0.00' and old_games.count(str(row[0])) <= 0:
-                
-                
-                old_games.append(row[0])
-                
-                
-                await message_channel.send(f'@everyone {row[0]} is free on steam')
-
-
 @tasks.loop(hours=1)
 async def called_on_thursday():
     global old_games
@@ -518,11 +469,13 @@ async def called_on_thursday():
 async def manage_offences():
 
     global muterole
+
+    # loads the data
     with open(user_data_path, 'r') as user_data_file:
         user_data = json.load(user_data_file)
         offences = user_data['offences']
         
-
+    # loops through members
     for member_id in offences:
         member_value = offences[member_id]
         
@@ -530,15 +483,21 @@ async def manage_offences():
         # removes one offence every 12 hours and 12 PM and AM 
         if datetime.today().hour % 12 == 0:
             member_value[0] -= 1 
-            remov
             
+        # checks if it is time to unmute someone    
         if (time() - member_value[1]) > 0 and member_value[1] != 0:
+
+            #gets the member from their id
             member_to_unmute = discord.utils.get(guild.members, id=int(member_id))
             
+            # removes the mute role
             await member_to_unmute.remove_roles(muterole)
+
+            # resets their unmute time
             member_value[1] = 0
             print(f'Unmuted {member_to_unmute.name}')
 
+    # changes the json
     with open(user_data_path, 'w') as user_data_file:
         json.dump(user_data, user_data_file)
 
