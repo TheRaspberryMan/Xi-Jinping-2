@@ -465,7 +465,7 @@ async def called_on_thursday():
                 await message_channel.send(f'@everyone {row[0]} is free on steam')
 
 # lowers offences and unmutes people             
-@tasks.loop(seconds=5)
+@tasks.loop(seconds=30)
 async def manage_offences():
 
     global muterole
