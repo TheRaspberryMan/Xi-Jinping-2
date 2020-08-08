@@ -33,6 +33,7 @@ user_data_path = 'user_data.json'
 # API_KEYS = ['e06f57fd-4ge5-4921-a403-a02e674f6e28']
 # hypixel.setKeys(API_KEYS)
 
+
 # adds a member to the user data json with 0 for money, offences, and xp
 def add_member_to_json(member):
 
@@ -256,12 +257,14 @@ async def on_message(message):
             level = xp_and_level[str(author.id)][1]
 
             if xp >= level ** 2:
+
                 xp_and_level[str(author.id)][1] += 1
                 await message.channel.send(f"WOW you just increased you ping level to {level}")
             
             xp_and_level[str(author.id)][0] += 1
             with open(user_data_path, 'w') as user_data_file:
                 json.dump(user_data, user_data_file)
+
     
     # getting a time to compare to 
     last_time = time()
