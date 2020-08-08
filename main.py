@@ -134,6 +134,8 @@ async def on_member_remove(member):
 
 @bot.event
 async def on_ready():
+    #sets status
+    await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('sex with stalin'))
 
     # getting the server
     global guild
