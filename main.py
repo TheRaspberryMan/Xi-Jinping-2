@@ -17,6 +17,9 @@ from random_word import RandomWords
 from difflib import SequenceMatcher
 from discord.ext import commands, tasks
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#RANDOM SETUP THINGS
+
 bot = commands.Bot(command_prefix='!')
 
 bot.remove_command('help')
@@ -29,6 +32,9 @@ __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 user_data_path = 'user_data.json'
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#VARIOUS FUNCTIONS
 
 # adds a member to the user data json with 0 for money, offences, and xp
 def add_member_to_json(member):
@@ -78,6 +84,10 @@ async def send_image(image, channel):
             image_binary.seek(0)
             await channel.send(file=discord.File(fp=image_binary, filename='background.png'))
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#EVENT COMMANDS
+
+#assigns roles upon joining and greets member
 @bot.event
 async def on_member_join(member):
     holy_role = discord.utils.get(member.guild.roles, id=739594604168347789)
@@ -112,6 +122,7 @@ async def on_member_join(member):
 
     await joins_and_leaves_channel.send(f"OH BLESSED DAY {member.name.upper()} HAS JOINED OUR MIGHTY EMPIRE") 
 
+#records roles upon leaving and informs all other users of the travesty
 @bot.event    
 async def on_member_remove(member):
 
@@ -129,6 +140,7 @@ async def on_member_remove(member):
 
     await joins_and_leaves_channel.send(f"{member.name} has left, how dismal")
 
+#startup command for starting loops and setting status
 @bot.event
 async def on_ready():
     #sets status
@@ -181,9 +193,7 @@ async def on_ready():
 
     print("I'm ready to ping some pongs\n")
 
-#MUTING AND UNMUTING
-#text chat control and muting
-#needs updates for ocmpatibility with xjp2
+#event command for xp and muting
 @bot.event
 async def on_message(message):
 
@@ -269,6 +279,10 @@ async def on_message(message):
     # makes it so commands still work
     await bot.process_commands(message)
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#CLIENT COMMANDS
+#number guessing
 @bot.command()
 async def number_guess(ctx):
     
@@ -330,23 +344,27 @@ async def number_guess(ctx):
             await ctx.send("You guessed Higher than the epic number")
             continue
 
+#ping command (do we really need this?)
 @bot.command()
 async def xi_jinping(ctx):
     
     #Pings the bot
     await ctx.send(f"Pong {round(bot.latency * 1000)}ms")
 
+#put this is dev commands
 @bot.command()
 async def view_json(ctx):
     with open('user_data.json') as user_data_file:
         user_data = json.load(user_data_file)
         print(json.dumps(user_data, indent=4, sort_keys=True))
 
+#gets users currnet balance
 @bot.command()
 async def ping_bal(ctx):
     with open(user_data_path, 'r') as user_data_file:
         await ctx.send(f"you have {json.load(user_data_file)['money'][str(ctx.message.author.id)]} ping bucks in your ping bank account")
 
+#whos that pokemon game
 @bot.command(pass_context = True, aliases=['who_pokemon', 'whothatpokemon', 'whopokemon', 'guess_pokemon', 'guesspokemon'])
 async def whos_that_pokemon(ctx):
     images = 'images'
@@ -426,6 +444,7 @@ async def whos_that_pokemon(ctx):
             await ctx.send(f"im devistated {sad_zeggy}")
             break
 
+#bomb, i really want this removed but i doubt that theo would permit such an action
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
 async def bomb(ctx):
@@ -437,6 +456,10 @@ async def bomb(ctx):
         continue
     await voice.disconnect()
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#LOOPS
+
+#thursday game reminder loop
 @tasks.loop(hours=1)
 async def called_on_thursday():
     global old_games
@@ -488,7 +511,7 @@ async def called_on_thursday():
                 
                 await game_deals.send(f'@everyone {row[0]} is free on steam')
 
-# lowers offences and unmutes people             
+# lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(seconds=30)
 async def manage_offences():
 
@@ -525,14 +548,15 @@ async def manage_offences():
     with open(user_data_path, 'w') as user_data_file:
         json.dump(user_data, user_data_file)
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#getting the key and starting the bot
 
-
+#for whatever reason the read token.txt line is not working so il fix it later
 f = open("token.txt", "r") # get key
 # Use test token if testing new features
 TOKEN = f.readline()
 
 TEST_TOKEN = f.readline()
 f.close()
-
 
 bot.run(str(TOKEN))
