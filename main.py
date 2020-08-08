@@ -12,6 +12,7 @@ from time import sleep, time
 from datetime import datetime
 from bs4 import BeautifulSoup
 from random import randint, choice
+from random_word import RandomWords
 from difflib import SequenceMatcher
 from discord.ext import commands, tasks
 
@@ -157,7 +158,9 @@ async def on_ready():
     old_games = []
 
     
-    
+    # random words
+    global r
+    r = RandomWords()    
 
 
 
@@ -236,12 +239,20 @@ async def on_message(message):
 
             with open(user_data_path, 'w') as user_data_file:
                 json.dump(user_data, user_data_file)
-        
+
+        else:
+            with open('user_data.json', 'r') as user_data_file:
+                user_data = json.load(user_data_file)
+                xp_and_level = user_data['xp']
 
             
 
-    
-    
+            xp = xp_and_level[str(author.id)][0]
+            level = xp_and_level[str(author.id)][1]
+
+            if xp >= level ** 2:
+                level += 1
+                await message.channel.send(f"{r.get_random_word(hasDictionaryDef=True, includePartOfSpeech='plural_noun', minCorpusCount = 10000)}")
     
     # getting a time to compare to 
     last_time = time()
