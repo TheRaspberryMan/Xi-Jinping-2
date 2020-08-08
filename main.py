@@ -455,6 +455,11 @@ async def whos_that_pokemon(ctx):
             await ctx.send(f"im devistated {sad_zeggy}")
             break
 
+
+@bot.command()
+async def cock(ctx):
+    await ctx.send("cock")
+
 #bomb, i really want this removed but i doubt that theo would permit such an action
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
