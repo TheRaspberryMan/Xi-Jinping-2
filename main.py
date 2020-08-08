@@ -1,6 +1,7 @@
 import os
 import json
 import pokepy
+import hypixel
 import discord
 import youtube_dl
 import discord.utils
@@ -29,6 +30,8 @@ __location__ = os.path.realpath(
 
 user_data_path = 'user_data.json'
 
+# API_KEYS = ['e06f57fd-4ge5-4921-a403-a02e674f6e28']
+# hypixel.setKeys(API_KEYS)
 
 # adds a member to the user data json with 0 for money, offences, and xp
 def add_member_to_json(member):
@@ -333,6 +336,30 @@ async def xi_jinping(ctx):
     
     #Pings the bot
     await ctx.send(f"Pong {round(bot.latency * 1000)}ms")
+
+#hypixel api commands
+
+@bot.command()
+async def hypixel_init(ctx):
+    member_id = ctx.message.author.id
+    username = ""
+    await ctx.send("please send your minecraft username(CASE SENSITIVE)")
+    username = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+
+    # loads the data
+    with open(user_data_path, 'r') as user_data_file:
+        user_data = json.load(user_data_file)
+        hypixel_dict = user_data['hypixel_usernames']
+    
+    if str(member_id) not in hypixel_dict:
+        hypixel_dict[member_id] = str(username.content)
+
+        await ctx.send(f'we will now start tracking your every move, thank you for participating in [REDACTED] {username.content}')
+        with open(user_data_path, 'w') as user_data_file:       
+            json.dump(user_data, user_data_file)
+
+    else:
+        await ctx.send(f'we are already tracking your every move, {username.content}')
 
 @bot.command()
 async def view_json(ctx):
