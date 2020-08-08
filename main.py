@@ -207,18 +207,12 @@ async def on_message(message):
     # getting the author to a shorter name
     author = message.author
 
-    # getting the role that mutes people
-    
-
     # loading user data
     with open(user_data_path, "r") as user_data_file:
         user_data = json.load(user_data_file)
         xp_dict = user_data['xp']
         offences = user_data['offences']
     
-
-    
-
     # checks that the message author is not a bot
     if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362]):
         if time() - last_time < 0.75 and last_author == author.id:
@@ -253,11 +247,22 @@ async def on_message(message):
                 json.dump(user_data, user_data_file)
 
         else:
+            #not working rn and i dont feel like fixing it
+            # if str(message.content.upper()) == "!store buy test product":
+            #     with open('user_data.json', 'r') as user_data_file:
+            #         user_data = json.load(user_data_file)
+            #         money_dict = user_data['money']
+            #     for key in money_dict:
+            #         if key == str(message.author.id):
+            #             money = money_dict[str(key)]
+            #     if int(money) > 15:
+            #         await message.channel.send("gamer")
+            #     else:
+            #         await message.channel.send("not gamer")
+
             with open('user_data.json', 'r') as user_data_file:
                 user_data = json.load(user_data_file)
                 xp_and_level = user_data['xp']
-
-            
 
             xp = xp_and_level[str(author.id)][0]
             level = xp_and_level[str(author.id)][1]
@@ -292,6 +297,11 @@ async def help(ctx):
     !ping_bal......................gets your ping bux balance
     !whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
     !level(dont use right now pls).........................might add soon, will probable get your level''')
+
+@bot.command()
+async def catalog(ctx):
+    await ctx.send('''the ping store:
+    test product....................(15 ping bux) please dont buy, this is just a test''')
 
 #number guessing
 @bot.command()
@@ -454,11 +464,6 @@ async def whos_that_pokemon(ctx):
         else:
             await ctx.send(f"im devistated {sad_zeggy}")
             break
-
-
-@bot.command()
-async def cock(ctx):
-    await ctx.send("cock")
 
 #bomb, i really want this removed but i doubt that theo would permit such an action
 @bot.command(pass_context=True)
