@@ -561,9 +561,7 @@ async def manage_offences():
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #getting the key and starting the bot
 
-#for whatever reason the read token.txt line is not working so il fix it later
-#i found the issue cam, the problem is that you're retarded
-#you didnt cd into xijinping2
+#if it doesnt work remember to cd into the right place cam you absolute idot
 f = open("token.txt", "r") # get key
 # Use test token if testing new features
 TOKEN = f.readline()
