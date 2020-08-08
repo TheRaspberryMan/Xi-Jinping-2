@@ -282,6 +282,16 @@ async def on_message(message):
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #CLIENT COMMANDS
+
+#help command
+@bot.command()
+async def help():
+    await ctx.send('''alas, it appears that you require aid.\
+    number_guess..................play a number guessing game to win ping bux
+    ping_bal......................gets your ping bux balance
+    whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
+    level.........................might add soon, will probable get your level''')
+
 #number guessing
 @bot.command()
 async def number_guess(ctx):
