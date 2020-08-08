@@ -253,6 +253,9 @@ async def on_message(message):
             if xp >= level ** 2:
                 level += 1
                 await message.channel.send(f"WOW you just increased you ping level to {level}")
+            
+            with open(user_data_path, 'w') as user_data_file:
+                json.dump(user_data, user_data_file)
     
     # getting a time to compare to 
     last_time = time()
