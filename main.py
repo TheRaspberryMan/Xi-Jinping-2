@@ -30,6 +30,7 @@ __location__ = os.path.realpath(
 user_data_path = 'user_data.json'
 
 
+
 # adds a member to the user data json with 0 for money, offences, and xp
 def add_member_to_json(member):
 
@@ -252,7 +253,7 @@ async def on_message(message):
 
             if xp >= level ** 2:
                 level += 1
-                await message.channel.send(f"{r.get_random_word(hasDictionaryDef=True, includePartOfSpeech='plural_noun', minCorpusCount = 10000)}")
+                await message.channel.send(f"WOW, you leveled up, you are so {r.get_random_word(hasDictionaryDef=True, includePartOfSpeech='adjective', minCorpusCount = 10000)}")
     
     # getting a time to compare to 
     last_time = time()
