@@ -251,9 +251,10 @@ async def on_message(message):
             level = xp_and_level[str(author.id)][1]
 
             if xp >= level ** 2:
-                level += 1
+                xp_and_level[str(author.id)][1] += 1
                 await message.channel.send(f"WOW you just increased you ping level to {level}")
             
+            xp_and_level[str(author.id)][0] += 1
             with open(user_data_path, 'w') as user_data_file:
                 json.dump(user_data, user_data_file)
     
