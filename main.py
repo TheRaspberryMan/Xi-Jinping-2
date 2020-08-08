@@ -285,7 +285,7 @@ async def on_message(message):
 
 #help command
 @bot.command()
-async def help():
+async def help(ctx):
     await ctx.send('''alas, it appears that you require aid.\
     number_guess..................play a number guessing game to win ping bux
     ping_bal......................gets your ping bux balance
