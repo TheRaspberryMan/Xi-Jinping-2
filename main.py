@@ -404,8 +404,9 @@ async def trivia(ctx):
     # variable to get out of the while loop
     playing = True
     
-    # function to make it so i have to type less
-    get_user_response = lambda : bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+    
+
+
 
     categories = {"general knowledge": Category.GENERAL_KNOWLEDGE, 'video games': Category.ENTERTAINMENT_VIDEO_GAMES, 'computers': Category.SCIENCE_COMPUTERS, \
         'mythology': Category.MYTHOLOGY, 'geography': Category.GEOGRAPHY, "history": Category.HISTORY, 'anime': Category.ENTERTAINMENT_JAPANESE_ANIME_MANGA, 'all': None}
@@ -414,11 +415,11 @@ async def trivia(ctx):
     while playing:
         try:
             await ctx.send(f"Which One: **{', '.join([key.title() if key.title() != 'All' else '**or** All' for key in categories])}**?")
-            user_category_response = await get_user_response()
+            user_category_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
             user_category = categories[user_category_response.content.lower()]
 
             await ctx.send('what difficulty shall you choose?')
-            user_difficulty_response = await get_user_response()
+            user_difficulty_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
             user_difficulty =  difficulties[user_difficulty_response.content.lower()]
             questions = client.get_questions(amount=20, category=user_category, difficulty=user_difficulty)
             amount_to_win = 0
@@ -439,7 +440,7 @@ async def trivia(ctx):
             for i in range(len(question.choices)):
                 options += f'{i + 1}. {question.choices[i]}\n'
             await ctx.send(options)
-            user_answer = await get_user_response()
+            user_answer = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
             user_answer = user_answer.content
             if user_answer.upper() == question.answer.upper() or int(user_answer) - 1 == question.answer_index:
                 await ctx.send("WOW you just got the question correct, who could have known")
@@ -449,7 +450,7 @@ async def trivia(ctx):
                 
             
             await ctx.send("Would you like to try you hand once again, perhaps with a different category? [Y/D/N]")
-            play_again = await get_user_response()
+            play_again = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
             play_again_content = play_again.content.upper()
             if play_again_content == 'Y':
                 continue
