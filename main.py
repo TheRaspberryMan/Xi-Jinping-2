@@ -1,3 +1,7 @@
+# fix requests library
+from gevent import monkey as curious_george
+curious_george.patch_all(thread=False, select=False)
+
 import os
 import json
 import pokepy
@@ -16,6 +20,7 @@ from random import randint, choice
 from random_word import RandomWords
 from difflib import SequenceMatcher
 from discord.ext import commands, tasks
+from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #RANDOM SETUP THINGS
@@ -73,7 +78,7 @@ async def change_ping_bucks(member_id, amount, channel, add_or_remove):
         json.dump(user_data, user_data_file)
     
     # informs the user what happend
-    add_or_remove_message = 'added' if add_or_remove else 'removed'
+    add_or_remove_message = 'added' if add_or_remove else 'deducted'
     await channel.send(f'{amount} ping bucks have been {add_or_remove_message} to your ping bank account')
 
 #takes a PIL image and sends it to a channel
@@ -176,7 +181,9 @@ async def on_ready():
     global r
     r = RandomWords()    
 
-
+    # emojis
+    global sad_zeggy
+    sad_zeggy = discord.utils.get(guild.emojis, name='Sad_Zeggy')
 
 
     # generates json
@@ -298,6 +305,7 @@ async def help(ctx):
     !whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
     !level(dont use right now pls).........................might add soon, will probable get your level''')
 
+#displays store items
 @bot.command()
 async def catalog(ctx):
     await ctx.send('''the ping store:
@@ -385,6 +393,80 @@ async def ping_bal(ctx):
     with open(user_data_path, 'r') as user_data_file:
         await ctx.send(f"you have {json.load(user_data_file)['money'][str(ctx.message.author.id)]} ping bucks in your ping bank account")
 
+#trivia
+@bot.command(pass_context = True, aliases=['triv', 'triva'])
+async def trivia(ctx):
+
+    author = ctx.message.author.id
+    # instance of the trivia api wrapper library class
+    client = OpenTDBClient()
+
+    # variable to get out of the while loop
+    playing = True
+    
+    # function to make it so i have to type less
+    get_user_response = lambda : bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+
+    categories = {"general knowledge": Category.GENERAL_KNOWLEDGE, 'video games': Category.ENTERTAINMENT_VIDEO_GAMES, 'computers': Category.SCIENCE_COMPUTERS, \
+        'mythology': Category.MYTHOLOGY, 'geography': Category.GEOGRAPHY, "history": Category.HISTORY, 'anime': Category.ENTERTAINMENT_JAPANESE_ANIME_MANGA, 'all': None}
+
+    difficulties = {'hard': Difficulty.HARD, 'medium': Difficulty.MEDIUM, 'easy': Difficulty.EASY}
+    while playing:
+        try:
+            await ctx.send(f"Which One: **{', '.join([key.title() if key.title() != 'All' else '**or** All' for key in categories])}**?")
+            user_category_response = await get_user_response()
+            user_category = categories[user_category_response.content.lower()]
+
+            await ctx.send('what difficulty shall you choose?')
+            user_difficulty_response = await get_user_response()
+            user_difficulty =  difficulties[user_difficulty_response.content.lower()]
+            questions = client.get_questions(amount=20, category=user_category, difficulty=user_difficulty)
+            amount_to_win = 0
+            if user_difficulty == Difficulty.EASY:
+                amount_to_win = 10
+            elif user_difficulty == Difficulty.MEDIUM:
+                amount_to_win = 20
+            else:
+                amount_to_win = 40
+            
+        except:
+            await ctx.send("THAT IS NOT A VALID RESPONSE YOU DIMWITTED DONKEY, TRY AGAIN ONCE AGAIN YOU NUMSKULL OAF!!11111@2!2!32!$!q111$41!!!!!!")
+            continue
+
+        for question in questions:
+            await ctx.send(f"**{question.question}**:")
+            options = ''
+            for i in range(len(question.choices)):
+                options += f'{i + 1}. {question.choices[i]}\n'
+            await ctx.send(options)
+            user_answer = await get_user_response()
+            user_answer = user_answer.content
+            if user_answer.upper() == question.answer.upper() or int(user_answer) - 1 == question.answer_index:
+                await ctx.send("WOW you just got the question correct, who could have known")
+                await change_ping_bucks(author, amount_to_win, ctx.message.channel, True)
+            else:
+                await ctx.send(f"YOU FEEBLEMINDED IMBECILE, THE CORRECT ANSWER WAS **{question.answer.upper()}**, FOR THIS TREMENDOUS BLUNDER YOU SHALL PAY")
+                
+            
+            await ctx.send("Would you like to try you hand once again, perhaps with a different category? [Y/D/N]")
+            play_again = await get_user_response()
+            play_again_content = play_again.content.upper()
+            if play_again_content == 'Y':
+                continue
+            
+            elif play_again_content == 'D':
+                break
+            
+            else:
+                await ctx.send(f"YOU HAVE FORSAKEN ME {sad_zeggy}")
+                playing = False
+                break
+        if play_again_content != 'N':    
+            await ctx.send("Alas, my great question river has run dry, ask me once more (this means type in the command again)")
+
+
+
+
 #whos that pokemon game
 @bot.command(pass_context = True, aliases=['who_pokemon', 'whothatpokemon', 'whopokemon', 'guess_pokemon', 'guesspokemon'])
 async def whos_that_pokemon(ctx):
@@ -393,7 +475,7 @@ async def whos_that_pokemon(ctx):
     check_function = lambda x: x.author == ctx.message.author
     errors = 0
     while True:
-        sad_zeggy = discord.utils.get(ctx.message.guild.emojis, name='Sad_Zeggy')
+        
         if errors >= 5:
             await ctx.send("I probably got ratelimited because you were playing to hard, try again in atleast 30 mintes")
             break
