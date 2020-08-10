@@ -355,7 +355,7 @@ async def number_guess(ctx):
             
             # asks the user if they want to play again     
             await ctx.send("You won, play again [Y/n]")
-            await change_ping_bucks(ctx.message.author, 10, ctx.message.channel, True)
+            await change_ping_bucks(ctx.message.author.id, 10, ctx.message.channel, True)
             play_again = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
             if play_again.content.upper() == "Y":
                 number = randint(1, 100)
@@ -463,7 +463,7 @@ async def trivia(ctx):
                 playing = False
                 break
         if play_again_content != 'N':    
-            await ctx.send("Alas, my great question river has run dry, ask me once more (this means type in the command again)")
+            await ctx.send("Alas, my great question river has run dry, ask me once more")
 
 
 
