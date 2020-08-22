@@ -1,7 +1,6 @@
 import os
 import json
 import pokepy
-import hypixel
 import discord
 import youtube_dl
 import discord.utils
@@ -323,6 +322,7 @@ async def number_guess(ctx):
         if guesses < 0:
             
             #says that the user is a stupid idiot because this game is extremely easy to win
+            #should probably remove the sleep commands because sleep commands are quite rude to other funcitons sometimes as i have learned in my many ventures - cam
             await ctx.send(f"Idiot dumb LOSER dumb idiot pogpega not epic gaming not kekaga the number was {number} dumb idiot man")
             sleep(0.5)
             await ctx.send("You really shouldn't have lost considering how easy it is to win")
@@ -395,7 +395,7 @@ async def whos_that_pokemon(ctx):
     while True:
         sad_zeggy = discord.utils.get(ctx.message.guild.emojis, name='Sad_Zeggy')
         if errors >= 5:
-            await ctx.send("I probably got ratelimited because you were playing to hard, try again in atleast 30 mintes")
+            await ctx.send("I probably got ratelimited because you were playing to hard, try again in at least 30 mintes")
             break
 
         background = Image.open(f'{images}/background.png')
@@ -467,7 +467,6 @@ async def whos_that_pokemon(ctx):
 
 #bomb, i really want this removed but i doubt that theo would permit such an action
 @bot.command(pass_context=True)
-@commands.has_permissions(administrator=True)
 async def bomb(ctx):
     await ctx.message.author.voice.channel.connect()
     voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
@@ -579,4 +578,4 @@ TOKEN = f.readline()
 TEST_TOKEN = f.readline()
 f.close()
 
-bot.run(str(TOKEN))
+bot.run(str(TEST_TOKEN))
