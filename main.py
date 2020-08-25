@@ -1,10 +1,7 @@
-# fix requests library
-from gevent import monkey as curious_george
-curious_george.patch_all(thread=False, select=False)
-
 import os
 import json
 import pokepy
+import hypixel
 import discord
 import youtube_dl
 import discord.utils
@@ -23,6 +20,9 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #RANDOM SETUP THINGS
+
+# instance of the trivia api wrapper library class
+client = OpenTDBClient()
 
 bot = commands.Bot(command_prefix='!')
 
@@ -202,7 +202,8 @@ async def on_ready():
 #event command for xp and muting
 @bot.event
 async def on_message(message):
-    is_text = False
+
+
     # variables for later use
     global last_author
     global messages
@@ -217,26 +218,9 @@ async def on_message(message):
         user_data = json.load(user_data_file)
         xp_dict = user_data['xp']
         offences = user_data['offences']
-
+    
     # checks that the message author is not a bot
     if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362]):
-
-        #checks if the message is in emoji channel and then checks if the message is an emoji or not
-        msg_content = message.content
-        if str(message.channel.id) == "no":
-            for letter in msg_content:
-                if letter.isalnum():
-                    is_text += 1
-            if is_text > 0:
-                #put your punishment code here theo
-                print("there is text!")
-                await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-        A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-        AND YOU SHALL PAY FOR YOUR SINS, YOU HAVE BEEN SILENCED FOR 1 MINUTE FOR SENDING 
-        NON-EMOJI CONTENT IN THE EMOJI CHANNEL!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
-        else:
-            print("no text!")
-
         if time() - last_time < 0.75 and last_author == author.id:
             messages += 1
 
@@ -296,7 +280,7 @@ async def on_message(message):
             xp_and_level[str(author.id)][0] += 1
             with open(user_data_path, 'w') as user_data_file:
                 json.dump(user_data, user_data_file)
-
+    
     # getting a time to compare to 
     last_time = time()
 
@@ -346,7 +330,6 @@ async def number_guess(ctx):
         if guesses < 0:
             
             #says that the user is a stupid idiot because this game is extremely easy to win
-            #should probably remove the sleep commands because sleep commands are quite rude to other funcitons sometimes as i have learned in my many ventures - cam
             await ctx.send(f"Idiot dumb LOSER dumb idiot pogpega not epic gaming not kekaga the number was {number} dumb idiot man")
             sleep(0.5)
             await ctx.send("You really shouldn't have lost considering how easy it is to win")
@@ -414,8 +397,6 @@ async def ping_bal(ctx):
 async def trivia(ctx):
 
     author = ctx.message.author.id
-    # instance of the trivia api wrapper library class
-    client = OpenTDBClient()
 
     # variable to get out of the while loop
     playing = True
@@ -483,6 +464,7 @@ async def trivia(ctx):
 
 
 
+
 #whos that pokemon game
 @bot.command(pass_context = True, aliases=['who_pokemon', 'whothatpokemon', 'whopokemon', 'guess_pokemon', 'guesspokemon'])
 async def whos_that_pokemon(ctx):
@@ -493,7 +475,7 @@ async def whos_that_pokemon(ctx):
     while True:
         
         if errors >= 5:
-            await ctx.send("I probably got ratelimited because you were playing to hard, try again in at least 30 mintes")
+            await ctx.send("I probably got ratelimited because you were playing to hard, try again in atleast 30 mintes")
             break
 
         background = Image.open(f'{images}/background.png')
@@ -565,6 +547,7 @@ async def whos_that_pokemon(ctx):
 
 #bomb, i really want this removed but i doubt that theo would permit such an action
 @bot.command(pass_context=True)
+@commands.has_permissions(administrator=True)
 async def bomb(ctx):
     await ctx.message.author.voice.channel.connect()
     voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
@@ -575,56 +558,7 @@ async def bomb(ctx):
     await voice.disconnect()
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#LOOPS
-
-#thursday game reminder loop
-@tasks.loop(hours=1)
-async def called_on_thursday():
-    global old_games
-    global game_deals
-
-    # Gets the message channel to send to 
-   
-    
-    hour = datetime.today().hour
-    # Checks if it is thursday and sends reminder
-    if datetime.today().weekday() == 3 and (hour == 11):
-
-        await game_deals.send("@everyone New Epic Time Gaming Time Epic time Gaming Time Epic free time gaming ")
-
-
-    HEADERS = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
-
-    request = get("https://steamdb.info/sales/", timeout=10, headers=HEADERS)
-
-
-
-    html = BeautifulSoup(request.content, 'html.parser')
-
-    discounts = html.find_all('tr')
-
-    row_lst = [discount for discount in discounts]
-    row_lst.pop(0)
-
-    row_lst_clean = []
-
-
-    for row in row_lst:
-        indivdual_row = []
-        for string in row.stripped_strings:
-            indivdual_row.append(string)
-        row_lst_clean.append(indivdual_row)
-
-    for row in row_lst_clean:
-        for element in row:
-            
-            if element == '$0.00' and old_games.count(str(row[0])) <= 0:
-                
-                
-                old_games.append(row[0])
-                
-                
-                await game_deals.send(f'@everyone {row[0]} is free on steam')
+#LOOP
 
 # lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(seconds=30)
@@ -643,9 +577,11 @@ async def manage_offences():
         
 
         # removes one offence every 12 hours and 12 PM and AM 
-        if datetime.today().hour % 12 == 0:
+        if datetime.today().hour % 12 == 0 and member_value[0] > 0:
             member_value[0] -= 1 
-            
+
+        elif member_value[0] < 0:
+            member_value[0] = 0
         # checks if it is time to unmute someone    
         if (time() - member_value[1]) > 0 and member_value[1] != 0:
 
