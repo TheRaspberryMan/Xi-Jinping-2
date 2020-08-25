@@ -25,6 +25,9 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #RANDOM SETUP THINGS
 
+# instance of the trivia api wrapper library class
+client = OpenTDBClient()
+
 bot = commands.Bot(command_prefix='!')
 
 bot.remove_command('help')
@@ -398,8 +401,6 @@ async def ping_bal(ctx):
 async def trivia(ctx):
 
     author = ctx.message.author.id
-    # instance of the trivia api wrapper library class
-    client = OpenTDBClient()
 
     # variable to get out of the while loop
     playing = True
@@ -632,9 +633,11 @@ async def manage_offences():
         
 
         # removes one offence every 12 hours and 12 PM and AM 
-        if datetime.today().hour % 12 == 0:
+        if datetime.today().hour % 12 == 0 and member_value[0] > 0:
             member_value[0] -= 1 
-            
+
+        elif member_value[0] <= 0:
+            member_value[0] = 0
         # checks if it is time to unmute someone    
         if (time() - member_value[1]) > 0 and member_value[1] != 0:
 
