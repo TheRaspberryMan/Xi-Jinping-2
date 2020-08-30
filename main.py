@@ -1,7 +1,6 @@
 import os
 import json
 import pokepy
-import hypixel
 import discord
 import youtube_dl
 import discord.utils
@@ -16,6 +15,13 @@ from random import randint, choice
 from random_word import RandomWords
 from difflib import SequenceMatcher
 from discord.ext import commands, tasks
+from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#RANDOM SETUP THINGS
+
+# instance of the trivia api wrapper library class
+client = OpenTDBClient()
 
 bot = commands.Bot(command_prefix='!')
 
@@ -30,8 +36,9 @@ __location__ = os.path.realpath(
 
 user_data_path = 'user_data.json'
 
-# API_KEYS = ['e06f57fd-4ge5-4921-a403-a02e674f6e28']
-# hypixel.setKeys(API_KEYS)
+last_quote = 0
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#VARIOUS FUNCTIONS
 
 
 # adds a member to the user data json with 0 for money, offences, and xp
@@ -71,7 +78,7 @@ async def change_ping_bucks(member_id, amount, channel, add_or_remove):
         json.dump(user_data, user_data_file)
     
     # informs the user what happend
-    add_or_remove_message = 'added' if add_or_remove else 'removed'
+    add_or_remove_message = 'added' if add_or_remove else 'deducted'
     await channel.send(f'{amount} ping bucks have been {add_or_remove_message} to your ping bank account')
 
 #takes a PIL image and sends it to a channel
@@ -82,6 +89,10 @@ async def send_image(image, channel):
             image_binary.seek(0)
             await channel.send(file=discord.File(fp=image_binary, filename='background.png'))
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#EVENT COMMANDS
+
+#assigns roles upon joining and greets member
 @bot.event
 async def on_member_join(member):
     holy_role = discord.utils.get(member.guild.roles, id=739594604168347789)
@@ -116,6 +127,7 @@ async def on_member_join(member):
 
     await joins_and_leaves_channel.send(f"OH BLESSED DAY {member.name.upper()} HAS JOINED OUR MIGHTY EMPIRE") 
 
+#records roles upon leaving and informs all other users of the travesty
 @bot.event    
 async def on_member_remove(member):
 
@@ -133,6 +145,7 @@ async def on_member_remove(member):
 
     await joins_and_leaves_channel.send(f"{member.name} has left, how dismal")
 
+#startup command for starting loops and setting status
 @bot.event
 async def on_ready():
     #sets status
@@ -168,26 +181,21 @@ async def on_ready():
     global r
     r = RandomWords()    
 
-
+    # emojis
+    global sad_zeggy
+    sad_zeggy = discord.utils.get(guild.emojis, name='Sad_Zeggy')
 
 
     # generates json
     for member in guild.members:
         add_member_to_json(member)
 
-
-        
-    #starts the thursday loop
-    called_on_thursday.start()
-
     #starts the manage offences loop
     manage_offences.start()
 
     print("I'm ready to ping some pongs\n")
 
-#MUTING AND UNMUTING
-#text chat control and muting
-#needs updates for ocmpatibility with xjp2
+#event command for xp and muting
 @bot.event
 async def on_message(message):
 
@@ -201,20 +209,60 @@ async def on_message(message):
     # getting the author to a shorter name
     author = message.author
 
-    # getting the role that mutes people
-    
-
     # loading user data
     with open(user_data_path, "r") as user_data_file:
         user_data = json.load(user_data_file)
         xp_dict = user_data['xp']
         offences = user_data['offences']
     
-
-    
-
     # checks that the message author is not a bot
-    if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362]):
+    if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362, 748564047649177610]):
+        #commands that use spaces
+        #checks if the message is in emoji channel and then checks if the message is an emoji or not
+        msg_content = message.content
+        if str(message.channel.id) == "740299204307714216":
+            for letter in msg_content:
+                if letter.isalnum():
+                    is_text += 1
+            if is_text > 0:
+                #put your punishment code here theo
+                print("there is text!")
+                await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
+        A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+        AND YOU SHALL PAY FOR YOUR SINS, 
+        YOU HAVE BEEN WARNED!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
+        
+        else:
+            if str(message.channel.id) == "740299204307714216":
+                print("no text!")
+        
+        #ping balance
+        if str(message.content.upper()) == "!PING BUX":
+            with open(user_data_path, 'r') as user_data_file:
+                await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
+
+        #ping balance
+        if str(message.content.upper()) == "!PING LEVEL":
+            with open(user_data_path, 'r') as user_data_file:
+                await message.channel.send(f"you are level {json.load(user_data_file)['xp'][str(message.author.id)][1]}")
+
+        #says hello
+        if (str(message.content.upper()) in ["HELLO XIJINPING", "HELLO XI JINPING", "HELLO XI", "HELLO MR.XI"]):
+            await message.channel.send(f"hello {message.author.name}")
+
+        #says hello
+        if (str(message.content.upper()) in ["GOODNIGHT XIJINPING", "GOOD NIGHT XIJINPING", "GOODNIGHT XI JINPING", "GOODNIGHT XIJINPING", "GOODNIGHT XI", "GOOD NIGHT XI", "GOODNIGHT MR.XI", "GOOD NIGHT MR.XI"]):
+            await message.channel.send(f"goodnight {message.author.name}")
+
+        #says hello
+        if (str(message.content.upper()) in ["GOOD MORNING XIJINPING", "GOOD MORNING XI JINPING", "GOODMORNING XIJINPING", "GOODMORNING XI JINPING", "GOODMORNING XI", "GOOD MORNING XI", "GOODMORNING MR.XI", "GOOD MORNING MR.XI"]):
+            await message.channel.send(f"good morning {message.author.name}")
+        
+        #says you're welcome
+        if (str(message.content.upper()) in ["THANK YOU XIJINPING", "THANK YOU XI JINPING", "THANK YOU XI", "THANK YOU MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI"]):
+            await message.channel.send(f"you're welcome {message.author.name}")
+
+        #anti spam
         if time() - last_time < 0.75 and last_author == author.id:
             messages += 1
 
@@ -233,9 +281,9 @@ async def on_message(message):
 
             # informs the traitor
             await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-    A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-    AND YOU SHALL PAY,
-    YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
+A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+AND YOU SHALL PAY,
+YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
 
 
             # mutes them
@@ -247,11 +295,22 @@ async def on_message(message):
                 json.dump(user_data, user_data_file)
 
         else:
+            #not working rn and i dont feel like fixing it
+            # if str(message.content.upper()) == "!store buy test product":
+            #     with open('user_data.json', 'r') as user_data_file:
+            #         user_data = json.load(user_data_file)
+            #         money_dict = user_data['money']
+            #     for key in money_dict:
+            #         if key == str(message.author.id):
+            #             money = money_dict[str(key)]
+            #     if int(money) > 15:
+            #         await message.channel.send("gamer")
+            #     else:
+            #         await message.channel.send("not gamer")
+
             with open('user_data.json', 'r') as user_data_file:
                 user_data = json.load(user_data_file)
                 xp_and_level = user_data['xp']
-
-            
 
             xp = xp_and_level[str(author.id)][0]
             level = xp_and_level[str(author.id)][1]
@@ -275,6 +334,37 @@ async def on_message(message):
     # makes it so commands still work
     await bot.process_commands(message)
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#CLIENT COMMANDS
+
+#quote command
+@bot.command()
+async def quote(ctx):
+    with open('user_data.json', 'r') as user_data_file:
+        user_data = json.load(user_data_file)
+        quotes = user_data['quotes']
+    if datetime.today().hour >= last_quote + 1:
+        quote_to_use = randint(1, 18)
+        print(quotes[str(quote_to_use)])
+        await ctx.send(quotes[str(quote_to_use)])
+
+#help command
+@bot.command()
+async def help(ctx):
+    await ctx.send('''alas, it appears that you require aid.
+
+    !number_guess..................play a number guessing game to win ping bux
+    !ping_bal......................gets your ping bux balance
+    !whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
+    !level(dont use right now pls).........................might add soon, will probable get your level''')
+
+#displays store items
+@bot.command()
+async def market(ctx):
+    await ctx.send('''the ping store:
+    test product....................(15 ping bux) please dont buy, this is just a test''')
+
+#number guessing
 @bot.command()
 async def number_guess(ctx):
     
@@ -295,11 +385,8 @@ async def number_guess(ctx):
             
             #says that the user is a stupid idiot because this game is extremely easy to win
             await ctx.send(f"Idiot dumb LOSER dumb idiot pogpega not epic gaming not kekaga the number was {number} dumb idiot man")
-            sleep(0.5)
             await ctx.send("You really shouldn't have lost considering how easy it is to win")
-            sleep(0.5)
             await ctx.send("Are you really that dumb and that much of a LOSER that you lost at a game popular among 3rd graders?")
-            sleep(0.5)
             await ctx.send("Play Again? [Y/n]")
             #asks if the user wants to play again then declares a new number variable if they do want to
             play_again = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
@@ -318,7 +405,7 @@ async def number_guess(ctx):
             
             # asks the user if they want to play again     
             await ctx.send("You won, play again [Y/n]")
-            await change_ping_bucks(ctx.message.author, 10, ctx.message.channel, True)
+            await change_ping_bucks(ctx.message.author.id, 10, ctx.message.channel, True)
             play_again = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
             if play_again.content.upper() == "Y":
                 number = randint(1, 100)
@@ -336,47 +423,97 @@ async def number_guess(ctx):
             await ctx.send("You guessed Higher than the epic number")
             continue
 
+#ping command (do we really need this?)
 @bot.command()
 async def xi_jinping(ctx):
     
     #Pings the bot
     await ctx.send(f"Pong {round(bot.latency * 1000)}ms")
 
-#hypixel api commands
-
-@bot.command()
-async def hypixel_init(ctx):
-    member_id = ctx.message.author.id
-    username = ""
-    await ctx.send("please send your minecraft username(CASE SENSITIVE)")
-    username = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-
-    # loads the data
-    with open(user_data_path, 'r') as user_data_file:
-        user_data = json.load(user_data_file)
-        hypixel_dict = user_data['hypixel_usernames']
-    
-    if str(member_id) not in hypixel_dict:
-        hypixel_dict[member_id] = str(username.content)
-
-        await ctx.send(f'we will now start tracking your every move, thank you for participating in [REDACTED] {username.content}')
-        with open(user_data_path, 'w') as user_data_file:       
-            json.dump(user_data, user_data_file)
-
-    else:
-        await ctx.send(f'we are already tracking your every move, {username.content}')
-
+#put this is dev commands
 @bot.command()
 async def view_json(ctx):
     with open('user_data.json') as user_data_file:
         user_data = json.load(user_data_file)
         print(json.dumps(user_data, indent=4, sort_keys=True))
 
+#gets users currnet balance
 @bot.command()
 async def ping_bal(ctx):
     with open(user_data_path, 'r') as user_data_file:
         await ctx.send(f"you have {json.load(user_data_file)['money'][str(ctx.message.author.id)]} ping bucks in your ping bank account")
 
+#trivia
+@bot.command(pass_context = True, aliases=['triv', 'triva'])
+async def trivia(ctx):
+
+    author = ctx.message.author.id
+
+    # variable to get out of the while loop
+    playing = True
+    
+    
+
+
+
+    categories = {"general knowledge": Category.GENERAL_KNOWLEDGE, 'video games': Category.ENTERTAINMENT_VIDEO_GAMES, 'computers': Category.SCIENCE_COMPUTERS, \
+        'mythology': Category.MYTHOLOGY, 'geography': Category.GEOGRAPHY, "history": Category.HISTORY, 'anime': Category.ENTERTAINMENT_JAPANESE_ANIME_MANGA, 'all': None}
+
+    difficulties = {'hard': Difficulty.HARD, 'medium': Difficulty.MEDIUM, 'easy': Difficulty.EASY}
+    while playing:
+        try:
+            await ctx.send(f"Which One: **{', '.join([key.title() if key.title() != 'All' else '**or** All' for key in categories])}**?")
+            user_category_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+            user_category = categories[user_category_response.content.lower()]
+
+            await ctx.send('what difficulty shall you choose?')
+            user_difficulty_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+            user_difficulty =  difficulties[user_difficulty_response.content.lower()]
+            questions = client.get_questions(amount=20, category=user_category, difficulty=user_difficulty)
+            amount_to_win = 0
+            if user_difficulty == Difficulty.EASY:
+                amount_to_win = 10
+            elif user_difficulty == Difficulty.MEDIUM:
+                amount_to_win = 20
+            else:
+                amount_to_win = 40
+            
+        except:
+            await ctx.send("THAT IS NOT A VALID RESPONSE YOU DIMWITTED DONKEY, TRY AGAIN ONCE AGAIN YOU NUMSKULL OAF!!11111@2!2!32!$!q111$41!!!!!!")
+            continue
+
+        for question in questions:
+            await ctx.send(f"**{question.question}**:")
+            options = ''
+            for i in range(len(question.choices)):
+                options += f'{i + 1}. {question.choices[i]}\n'
+            await ctx.send(options)
+            user_answer = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+            user_answer = user_answer.content
+            if user_answer.upper() == question.answer.upper() or int(user_answer) - 1 == question.answer_index:
+                await ctx.send("WOW you just got the question correct, who could have known")
+                await change_ping_bucks(author, amount_to_win, ctx.message.channel, True)
+            else:
+                await ctx.send(f"YOU FEEBLEMINDED IMBECILE, THE CORRECT ANSWER WAS **{question.answer.upper()}**, FOR THIS TREMENDOUS BLUNDER YOU SHALL PAY")
+                
+            
+            await ctx.send("Would you like to try you hand once again, perhaps with a different category? [Y/D/N]")
+            play_again = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+            play_again_content = play_again.content.upper()
+            if play_again_content == 'Y':
+                continue
+            
+            elif play_again_content == 'D':
+                break
+            
+            else:
+                await ctx.send(f"YOU HAVE FORSAKEN ME {sad_zeggy}")
+                playing = False
+                break
+        if play_again_content != 'N':    
+            await ctx.send("Alas, my great question river has run dry, ask me once more")
+
+#whos that pokemon game
 @bot.command(pass_context = True, aliases=['who_pokemon', 'whothatpokemon', 'whopokemon', 'guess_pokemon', 'guesspokemon'])
 async def whos_that_pokemon(ctx):
     images = 'images'
@@ -384,7 +521,7 @@ async def whos_that_pokemon(ctx):
     check_function = lambda x: x.author == ctx.message.author
     errors = 0
     while True:
-        sad_zeggy = discord.utils.get(ctx.message.guild.emojis, name='Sad_Zeggy')
+        
         if errors >= 5:
             await ctx.send("I probably got ratelimited because you were playing to hard, try again in atleast 30 mintes")
             break
@@ -456,69 +593,22 @@ async def whos_that_pokemon(ctx):
             await ctx.send(f"im devistated {sad_zeggy}")
             break
 
+#bomb, i really want this removed but i doubt that theo would permit such an action
 @bot.command(pass_context=True)
-@commands.has_permissions(administrator=True)
 async def bomb(ctx):
-    await ctx.message.author.voice.channel.connect()
-    voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
-    voice.play(discord.FFmpegPCMAudio('Boom.mp3'))
-    voice.volume = 100
-    while voice.is_playing():
-        continue
-    await voice.disconnect()
+    if (ctx.message.author.id in [351707203981541378, 239150965217820672]):
+        await ctx.message.author.voice.channel.connect()
+        voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+        voice.play(discord.FFmpegPCMAudio('Boom.mp3'))
+        voice.volume = 100
+        while voice.is_playing():
+            continue
+        await voice.disconnect()
 
-@tasks.loop(hours=1)
-async def called_on_thursday():
-    global old_games
-    global game_deals
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#LOOP
 
-    # Gets the message channel to send to 
-   
-    
-    hour = datetime.today().hour
-    # Checks if it is thursday and sends reminder
-    if datetime.today().weekday() == 3 and (hour == 11):
-
-        await game_deals.send("@everyone New Epic Time Gaming Time Epic time Gaming Time Epic free time gaming ")
-
-
-    HEADERS = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
-
-    request = get("https://steamdb.info/sales/", timeout=10, headers=HEADERS)
-
-
-
-    html = BeautifulSoup(request.content, 'html.parser')
-
-    discounts = html.find_all('tr')
-
-    row_lst = [discount for discount in discounts]
-    row_lst.pop(0)
-
-    row_lst_clean = []
-
-
-    for row in row_lst:
-        indivdual_row = []
-        for string in row.stripped_strings:
-            indivdual_row.append(string)
-        row_lst_clean.append(indivdual_row)
-
-
-    
-
-    for row in row_lst_clean:
-        for element in row:
-            
-            if element == '$0.00' and old_games.count(str(row[0])) <= 0:
-                
-                
-                old_games.append(row[0])
-                
-                
-                await game_deals.send(f'@everyone {row[0]} is free on steam')
-
-# lowers offences and unmutes people             
+# lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(seconds=30)
 async def manage_offences():
 
@@ -535,9 +625,11 @@ async def manage_offences():
         
 
         # removes one offence every 12 hours and 12 PM and AM 
-        if datetime.today().hour % 12 == 0:
+        if datetime.today().hour % 12 == 0 and member_value[0] > 0:
             member_value[0] -= 1 
-            
+
+        elif member_value[0] < 0:
+            member_value[0] = 0
         # checks if it is time to unmute someone    
         if (time() - member_value[1]) > 0 and member_value[1] != 0:
 
@@ -555,14 +647,14 @@ async def manage_offences():
     with open(user_data_path, 'w') as user_data_file:
         json.dump(user_data, user_data_file)
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#getting the key and starting the bot
 
-
+#if it doesnt work remember to cd into the right place cam you absolute idot
 f = open("token.txt", "r") # get key
 # Use test token if testing new features
 TOKEN = f.readline()
-
 TEST_TOKEN = f.readline()
 f.close()
-
 
 bot.run(str(TOKEN))
