@@ -628,7 +628,7 @@ async def manage_offences():
         if datetime.today().hour % 12 == 0 and member_value[0] > 0:
             member_value[0] -= 1 
 
-        elif member_value[0] < 0:
+        else:
             member_value[0] = 0
         # checks if it is time to unmute someone    
         if (time() - member_value[1]) > 0 and member_value[1] != 0:
