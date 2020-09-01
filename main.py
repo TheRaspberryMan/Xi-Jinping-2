@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import pokepy
 import discord
@@ -11,6 +12,7 @@ from requests import get
 from time import sleep, time
 from datetime import datetime
 from bs4 import BeautifulSoup
+from emoji import UNICODE_EMOJI
 from random import randint, choice
 from random_word import RandomWords
 from difflib import SequenceMatcher
@@ -215,6 +217,7 @@ async def on_message(message):
         xp_dict = user_data['xp']
         offences = user_data['offences']
     
+
     # checks that the message author is not a bot
     if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362, 748564047649177610]):
         #commands that use spaces
@@ -222,9 +225,16 @@ async def on_message(message):
         msg_content = message.content
         if str(message.channel.id) == "740299204307714216":
             
-            if msg_content.isalnum():
-                #I made it so he just deletes the message
-                await message.delete()
+            
+            
+            
+            
+            
+            #I made it so he just deletes the message
+            if not (any(str(emoji) in msg_content for emoji in message.guild.emojis)) and not (any(str(emoji) in msg_content for emoji in UNICODE_EMOJI)):
+                await message.delete() 
+            
+            
                 
             #         print("there is text!")
             #         await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
@@ -233,106 +243,105 @@ async def on_message(message):
             # YOU HAVE BEEN WARNED!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
         
         else:
-            if str(message.channel.id) == "740299204307714216":
-                print("no text!")
+            
         
-        #ping balance
-        if str(message.content.upper()) == "!PING BUX":
-            with open(user_data_path, 'r') as user_data_file:
-                await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
+            #ping balance
+            if str(message.content.upper()) == "!PING BUX":
+                with open(user_data_path, 'r') as user_data_file:
+                    await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
 
-        #ping balance
-        if str(message.content.upper()) == "!PING LEVEL":
-            with open(user_data_path, 'r') as user_data_file:
-                await message.channel.send(f"you are level {json.load(user_data_file)['xp'][str(message.author.id)][1]}")
+            #ping balance
+            if str(message.content.upper()) == "!PING LEVEL":
+                with open(user_data_path, 'r') as user_data_file:
+                    await message.channel.send(f"you are level {json.load(user_data_file)['xp'][str(message.author.id)][1]}")
 
-        #says hello
-        if (str(message.content.upper()) in ["HELLO XIJINPING", "HELLO XI JINPING", "HELLO XI", "HELLO MR.XI"]):
-            await message.channel.send(f"hello {message.author.name}")
+            #says hello
+            if (str(message.content.upper()) in ["HELLO XIJINPING", "HELLO XI JINPING", "HELLO XI", "HELLO MR.XI"]):
+                await message.channel.send(f"hello {message.author.name}")
 
-        #says hello
-        if (str(message.content.upper()) in ["GOODNIGHT XIJINPING", "GOOD NIGHT XIJINPING", "GOODNIGHT XI JINPING", "GOODNIGHT XIJINPING", "GOODNIGHT XI", "GOOD NIGHT XI", "GOODNIGHT MR.XI", "GOOD NIGHT MR.XI"]):
-            await message.channel.send(f"goodnight {message.author.name}")
+            #says hello
+            if (str(message.content.upper()) in ["GOODNIGHT XIJINPING", "GOOD NIGHT XIJINPING", "GOODNIGHT XI JINPING", "GOODNIGHT XIJINPING", "GOODNIGHT XI", "GOOD NIGHT XI", "GOODNIGHT MR.XI", "GOOD NIGHT MR.XI"]):
+                await message.channel.send(f"goodnight {message.author.name}")
 
-        #says hello
-        if (str(message.content.upper()) in ["GOOD MORNING XIJINPING", "GOOD MORNING XI JINPING", "GOODMORNING XIJINPING", "GOODMORNING XI JINPING", "GOODMORNING XI", "GOOD MORNING XI", "GOODMORNING MR.XI", "GOOD MORNING MR.XI"]):
-            await message.channel.send(f"good morning {message.author.name}")
+            #says hello
+            if (str(message.content.upper()) in ["GOOD MORNING XIJINPING", "GOOD MORNING XI JINPING", "GOODMORNING XIJINPING", "GOODMORNING XI JINPING", "GOODMORNING XI", "GOOD MORNING XI", "GOODMORNING MR.XI", "GOOD MORNING MR.XI"]):
+                await message.channel.send(f"good morning {message.author.name}")
+            
+            #says you're welcome
+            if (str(message.content.upper()) in ["THANK YOU XIJINPING", "THANK YOU XI JINPING", "THANK YOU XI", "THANK YOU MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI"]):
+                await message.channel.send(f"you're welcome {message.author.name}")
+
+            #anti spam
+            if time() - last_time < 0.75 and last_author == author.id:
+                messages += 1
+
+            else:
+                messages = 0
+            
+            if messages > 4:
+                
+                # gets the users current offences
+                current_offences = offences[str(author.id)][0] + 1
+                
+                # gets the time they should be muted for 
+                mute_time = time() + ((current_offences - 1) * 60 + 60)
+                mute_time_in_seconds = mute_time - time()
+                print(f'Muted {author.name} for {mute_time_in_seconds} seconds \n{author.name} has {current_offences} offences')
+
+                # informs the traitor
+                await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
+    A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+    AND YOU SHALL PAY,
+    YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
+
+
+                # mutes them
+                await author.add_roles(muterole)
+                
+                offences[str(author.id)] = [current_offences, mute_time]
+
+                with open(user_data_path, 'w') as user_data_file:
+                    json.dump(user_data, user_data_file)
+
+            else:
+                #not working rn and i dont feel like fixing it
+                # if str(message.content.upper()) == "!store buy test product":
+                #     with open('user_data.json', 'r') as user_data_file:
+                #         user_data = json.load(user_data_file)
+                #         money_dict = user_data['money']
+                #     for key in money_dict:
+                #         if key == str(message.author.id):
+                #             money = money_dict[str(key)]
+                #     if int(money) > 15:
+                #         await message.channel.send("gamer")
+                #     else:
+                #         await message.channel.send("not gamer")
+
+                with open('user_data.json', 'r') as user_data_file:
+                    user_data = json.load(user_data_file)
+                    xp_and_level = user_data['xp']
+
+                xp = xp_and_level[str(author.id)][0]
+                level = xp_and_level[str(author.id)][1]
+
+                if xp >= level ** 2:
+
+                    xp_and_level[str(author.id)][1] += 1
+                    await message.channel.send(f"WOW you just increased you ping level to {level}")
+                
+                xp_and_level[str(author.id)][0] += 1
+                with open(user_data_path, 'w') as user_data_file:
+                    json.dump(user_data, user_data_file)
+
         
-        #says you're welcome
-        if (str(message.content.upper()) in ["THANK YOU XIJINPING", "THANK YOU XI JINPING", "THANK YOU XI", "THANK YOU MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI"]):
-            await message.channel.send(f"you're welcome {message.author.name}")
+            # getting a time to compare to 
+            last_time = time()
 
-        #anti spam
-        if time() - last_time < 0.75 and last_author == author.id:
-            messages += 1
+            # sets who messaged last
+            last_author = author.id
 
-        else:
-            messages = 0
-        
-        if messages > 4:
-            
-            # gets the users current offences
-            current_offences = offences[str(author.id)][0] + 1
-            
-            # gets the time they should be muted for 
-            mute_time = time() + ((current_offences - 1) * 60 + 60)
-            mute_time_in_seconds = mute_time - time()
-            print(f'Muted {author.name} for {mute_time_in_seconds} seconds \n{author.name} has {current_offences} offences')
-
-            # informs the traitor
-            await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-AND YOU SHALL PAY,
-YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
-
-
-            # mutes them
-            await author.add_roles(muterole)
-            
-            offences[str(author.id)] = [current_offences, mute_time]
-
-            with open(user_data_path, 'w') as user_data_file:
-                json.dump(user_data, user_data_file)
-
-        else:
-            #not working rn and i dont feel like fixing it
-            # if str(message.content.upper()) == "!store buy test product":
-            #     with open('user_data.json', 'r') as user_data_file:
-            #         user_data = json.load(user_data_file)
-            #         money_dict = user_data['money']
-            #     for key in money_dict:
-            #         if key == str(message.author.id):
-            #             money = money_dict[str(key)]
-            #     if int(money) > 15:
-            #         await message.channel.send("gamer")
-            #     else:
-            #         await message.channel.send("not gamer")
-
-            with open('user_data.json', 'r') as user_data_file:
-                user_data = json.load(user_data_file)
-                xp_and_level = user_data['xp']
-
-            xp = xp_and_level[str(author.id)][0]
-            level = xp_and_level[str(author.id)][1]
-
-            if xp >= level ** 2:
-
-                xp_and_level[str(author.id)][1] += 1
-                await message.channel.send(f"WOW you just increased you ping level to {level}")
-            
-            xp_and_level[str(author.id)][0] += 1
-            with open(user_data_path, 'w') as user_data_file:
-                json.dump(user_data, user_data_file)
-
-    
-    # getting a time to compare to 
-    last_time = time()
-
-    # sets who messaged last
-    last_author = author.id
-
-    # makes it so commands still work
-    await bot.process_commands(message)
+            # makes it so commands still work
+            await bot.process_commands(message)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #CLIENT COMMANDS
@@ -628,11 +637,9 @@ async def manage_offences():
         if datetime.today().hour % 12 == 0 and member_value[0] > 0:
             member_value[0] -= 1 
 
-<<<<<<< HEAD
-        elif member_value[0] <= 0:
-=======
+
+
         else:
->>>>>>> 4b382803693bcab4f4d249629447225223214a45
             member_value[0] = 0
         # checks if it is time to unmute someone    
         if (time() - member_value[1]) > 0 and member_value[1] != 0:
