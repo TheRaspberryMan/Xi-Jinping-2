@@ -40,6 +40,7 @@ last_quote = 0
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #VARIOUS FUNCTIONS
 
+
 # adds a member to the user data json with 0 for money, offences, and xp
 def add_member_to_json(member):
 
@@ -220,16 +221,16 @@ async def on_message(message):
         #checks if the message is in emoji channel and then checks if the message is an emoji or not
         msg_content = message.content
         if str(message.channel.id) == "740299204307714216":
-            for letter in msg_content:
-                if letter.isalnum():
-                    is_text += 1
-            if is_text > 0:
-                #put your punishment code here theo
-                print("there is text!")
-                await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-        A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-        AND YOU SHALL PAY FOR YOUR SINS, 
-        YOU HAVE BEEN WARNED!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
+            
+            if msg_content.isalnum():
+                #I made it so he just deletes the message
+                await message.delete()
+                
+            #         print("there is text!")
+            #         await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
+            # A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+            # AND YOU SHALL PAY FOR YOUR SINS, 
+            # YOU HAVE BEEN WARNED!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
         
         else:
             if str(message.channel.id) == "740299204307714216":
@@ -315,12 +316,14 @@ YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
             level = xp_and_level[str(author.id)][1]
 
             if xp >= level ** 2:
+
                 xp_and_level[str(author.id)][1] += 1
                 await message.channel.send(f"WOW you just increased you ping level to {level}")
             
             xp_and_level[str(author.id)][0] += 1
             with open(user_data_path, 'w') as user_data_file:
                 json.dump(user_data, user_data_file)
+
     
     # getting a time to compare to 
     last_time = time()
@@ -625,7 +628,7 @@ async def manage_offences():
         if datetime.today().hour % 12 == 0 and member_value[0] > 0:
             member_value[0] -= 1 
 
-        elif member_value[0] < 0:
+        else:
             member_value[0] = 0
         # checks if it is time to unmute someone    
         if (time() - member_value[1]) > 0 and member_value[1] != 0:
