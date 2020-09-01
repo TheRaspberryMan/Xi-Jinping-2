@@ -221,16 +221,16 @@ async def on_message(message):
         #checks if the message is in emoji channel and then checks if the message is an emoji or not
         msg_content = message.content
         if str(message.channel.id) == "740299204307714216":
-            for letter in msg_content:
-                if letter.isalnum():
-                    is_text += 1
-            if is_text > 0:
-                #put your punishment code here theo
-                print("there is text!")
-                await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-        A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-        AND YOU SHALL PAY FOR YOUR SINS, 
-        YOU HAVE BEEN WARNED!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
+            
+            if msg_content.isalnum():
+                #I made it so he just deletes the message
+                await message.delete()
+                
+            #         print("there is text!")
+            #         await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
+            # A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+            # AND YOU SHALL PAY FOR YOUR SINS, 
+            # YOU HAVE BEEN WARNED!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
         
         else:
             if str(message.channel.id) == "740299204307714216":
