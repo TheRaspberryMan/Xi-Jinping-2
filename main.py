@@ -30,7 +30,7 @@ bot = commands.Bot(command_prefix='!')
 bot.remove_command('help')
 
 # gets the joins-leaves channel
-joins_and_leaves_channel = bot.get_channel(740287906534391829)
+
 
 # changes the bots working location to where it is located
 __location__ = os.path.realpath(
@@ -97,6 +97,7 @@ async def send_image(image, channel):
 #assigns roles upon joining and greets member
 @bot.event
 async def on_member_join(member):
+    global joins_and_leaves_channel
     holy_role = discord.utils.get(member.guild.roles, id=739594604168347789)
 
     # loads data
@@ -127,11 +128,12 @@ async def on_member_join(member):
     with open(user_data_path, 'w') as user_roles_file:
         json.dump(user_data, user_roles_file)
 
-    await joins_and_leaves_channel.send(f"OH BLESSED DAY {member.name.upper()} HAS JOINED OUR MIGHTY EMPIRE") 
+    await joins_and_leaves_channel.send(f"OH BLESSED DAY **{member.name.upper()}** HAS JOINED OUR MIGHTY EMPIRE") 
 
 #records roles upon leaving and informs all other users of the travesty
 @bot.event    
 async def on_member_remove(member):
+    global joins_and_leaves_channel
 
     # loads data 
     with open(user_data_path, 'r') as user_data_file:
@@ -145,13 +147,16 @@ async def on_member_remove(member):
     with open(user_data_path, 'w') as user_data_file:
         json.dump(user_data, user_data_file)
 
-    await joins_and_leaves_channel.send(f"{member.name} has left, how dismal")
+    await joins_and_leaves_channel.send(f"**{member.name}** has left, how dismal")
 
 #startup command for starting loops and setting status
 @bot.event
 async def on_ready():
     #sets status
     await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('sex with stalin'))
+
+    global joins_and_leaves_channel
+    joins_and_leaves_channel = bot.get_channel(740287906534391829)
 
     # getting the server
     global guild
@@ -213,7 +218,7 @@ async def on_message(message):
 
     # loading user data
     with open(user_data_path, "r") as user_data_file:
-        user_data = json.load(user_data_file)
+        user_data = json.load(user_data_file) 
         xp_dict = user_data['xp']
         offences = user_data['offences']
     
@@ -224,7 +229,6 @@ async def on_message(message):
         #checks if the message is in emoji channel and then checks if the message is an emoji or not
         msg_content = message.content
         if str(message.channel.id) == "740299204307714216":
-            
             
             
             
@@ -249,7 +253,6 @@ async def on_message(message):
             if str(message.content.upper()) == "!PING BUX":
                 with open(user_data_path, 'r') as user_data_file:
                     await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
-
             #ping balance
             if str(message.content.upper()) == "!PING LEVEL":
                 with open(user_data_path, 'r') as user_data_file:
@@ -272,7 +275,7 @@ async def on_message(message):
                 await message.channel.send(f"you're welcome {message.author.name}")
 
             #anti spam
-            if time() - last_time < 0.75 and last_author == author.id:
+            if time() - last_time < 1.25 and last_author == author.id:
                 messages += 1
 
             else:
