@@ -25,12 +25,18 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 # instance of the trivia api wrapper library class
 client = OpenTDBClient()
 
+says_mean_thing = 0
+
+says_butter = 0
+
 bot = commands.Bot(command_prefix='!')
 
 bot.remove_command('help')
 
 # gets the joins-leaves channel
 joins_and_leaves_channel = bot.get_channel(740287906534391829)
+
+general_channel = bot.get_channel(739522722169618519)
 
 # changes the bots working location to where it is located
 __location__ = os.path.realpath(
@@ -271,6 +277,15 @@ async def on_message(message):
             if (str(message.content.upper()) in ["THANK YOU XIJINPING", "THANK YOU XI JINPING", "THANK YOU XI", "THANK YOU MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI"]):
                 await message.channel.send(f"you're welcome {message.author.name}")
 
+            #talks about butter
+            if (str(message.content.upper()) in ["I LIKE BUTTER", "I LOVE BUTTER"]):
+                says_butter = randint(1, 5)
+                if says_butter == 2:
+                    await message.channel.send('''Wow, a cow made of butter. My girls would love it. In fact, the first sentence Caroline ever said was "I like butter"''')
+
+            if says_mean_thing == 25:
+                await message.channel.send(f"well {message.author.name}, i guess i must have early onset Alzheimer's, because i dont remember asking.")
+
             #anti spam
             if time() - last_time < 0.75 and last_author == author.id:
                 messages += 1
@@ -346,6 +361,15 @@ async def on_message(message):
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #CLIENT COMMANDS
 
+#vote initate command
+@bot.command()
+async def init_vote(ctx):
+    await ctx.send("voting subject")
+    voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+    await ctx.send("time to vote (hours)")
+    voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+    await ctx.send(f"@everyone A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N")
+
 #quote command
 @bot.command()
 async def quote(ctx):
@@ -363,9 +387,10 @@ async def help(ctx):
     await ctx.send('''alas, it appears that you require aid.
 
     !number_guess..................play a number guessing game to win ping bux
-    !ping_bal......................gets your ping bux balance
+    !ping bal......................gets your ping bux balance
     !whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
-    !level(dont use right now pls).........................might add soon, will probable get your level''')
+    !ping level....................gets your level
+    !trivia........................trivia''')
 
 #displays store items
 @bot.command()
@@ -460,10 +485,6 @@ async def trivia(ctx):
 
     # variable to get out of the while loop
     playing = True
-    
-    
-
-
 
     categories = {"general knowledge": Category.GENERAL_KNOWLEDGE, 'video games': Category.ENTERTAINMENT_VIDEO_GAMES, 'computers': Category.SCIENCE_COMPUTERS, \
         'mythology': Category.MYTHOLOGY, 'geography': Category.GEOGRAPHY, "history": Category.HISTORY, 'anime': Category.ENTERTAINMENT_JAPANESE_ANIME_MANGA, 'all': None}
