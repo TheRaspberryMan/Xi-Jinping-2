@@ -34,7 +34,7 @@ bot = commands.Bot(command_prefix='!')
 bot.remove_command('help')
 
 # gets the joins-leaves channel
-
+joins_and_leaves_channel = bot.get_channel(740287906534391829)
 
 general_channel = bot.get_channel(739522722169618519)
 
@@ -103,14 +103,15 @@ async def send_image(image, channel):
 #assigns roles upon joining and greets member
 @bot.event
 async def on_member_join(member):
-    global joins_and_leaves_channel
     holy_role = discord.utils.get(member.guild.roles, id=739594604168347789)
+
+    if member.id == 444258961332502548:
+        await bot.kick(member)
 
     # loads data
     with open(user_data_path, 'r') as user_roles_file:
             user_data = json.load(user_roles_file)
             user_roles = user_data['roles']
-    
     
     add_member_to_json(member)
     
@@ -134,12 +135,11 @@ async def on_member_join(member):
     with open(user_data_path, 'w') as user_roles_file:
         json.dump(user_data, user_roles_file)
 
-    await joins_and_leaves_channel.send(f"OH BLESSED DAY **{member.name.upper()}** HAS JOINED OUR MIGHTY EMPIRE") 
+    await joins_and_leaves_channel.send(f"OH BLESSED DAY {member.name.upper()} HAS JOINED OUR MIGHTY EMPIRE") 
 
 #records roles upon leaving and informs all other users of the travesty
 @bot.event    
 async def on_member_remove(member):
-    global joins_and_leaves_channel
 
     # loads data 
     with open(user_data_path, 'r') as user_data_file:
@@ -153,16 +153,13 @@ async def on_member_remove(member):
     with open(user_data_path, 'w') as user_data_file:
         json.dump(user_data, user_data_file)
 
-    await joins_and_leaves_channel.send(f"**{member.name}** has left, how dismal")
+    await joins_and_leaves_channel.send(f"{member.name} has left, how dismal")
 
 #startup command for starting loops and setting status
 @bot.event
 async def on_ready():
     #sets status
     await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('sex with stalin'))
-
-    global joins_and_leaves_channel
-    joins_and_leaves_channel = bot.get_channel(740287906534391829)
 
     # getting the server
     global guild
@@ -224,7 +221,7 @@ async def on_message(message):
 
     # loading user data
     with open(user_data_path, "r") as user_data_file:
-        user_data = json.load(user_data_file) 
+        user_data = json.load(user_data_file)
         xp_dict = user_data['xp']
         offences = user_data['offences']
     
@@ -235,6 +232,7 @@ async def on_message(message):
         #checks if the message is in emoji channel and then checks if the message is an emoji or not
         msg_content = message.content
         if str(message.channel.id) == "740299204307714216":
+            
             
             
             
@@ -259,6 +257,7 @@ async def on_message(message):
             if str(message.content.upper()) == "!PING BUX":
                 with open(user_data_path, 'r') as user_data_file:
                     await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
+
             #ping balance
             if str(message.content.upper()) == "!PING LEVEL":
                 with open(user_data_path, 'r') as user_data_file:
@@ -290,7 +289,7 @@ async def on_message(message):
                 await message.channel.send(f"well {message.author.name}, i guess i must have early onset Alzheimer's, because i dont remember asking.")
 
             #anti spam
-            if time() - last_time < 1.25 and last_author == author.id:
+            if time() - last_time < 0.75 and last_author == author.id:
                 messages += 1
 
             else:
@@ -364,14 +363,14 @@ async def on_message(message):
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #CLIENT COMMANDS
 
-#vote initate command
-@bot.command()
-async def init_vote(ctx):
-    await ctx.send("voting subject")
-    voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-    await ctx.send("time to vote (hours)")
-    voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-    await ctx.send(f"@everyone A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N")
+# #vote initate command
+# @bot.command()
+# async def init_vote(ctx):
+#     await ctx.send("voting subject")
+#     voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+#     await ctx.send("time to vote (hours)")
+#     voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+#     await ctx.send(f"@everyone A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
 
 #quote command
 @bot.command()
@@ -638,6 +637,10 @@ async def bomb(ctx):
             continue
         await voice.disconnect()
 
+@bot.command()
+async def kick(ctx, member : discord.Member, *, reason=None):
+    await member.kick(reason=reason)
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
 
@@ -655,13 +658,10 @@ async def manage_offences():
     # loops through members
     for member_id in offences:
         member_value = offences[member_id]
-        
 
         # removes one offence every 12 hours and 12 PM and AM 
         if datetime.today().hour % 12 == 0 and member_value[0] > 0:
             member_value[0] -= 1 
-
-
 
         else:
             member_value[0] = 0
