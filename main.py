@@ -17,6 +17,7 @@ from random import randint, choice
 from random_word import RandomWords
 from difflib import SequenceMatcher
 from discord.ext import commands, tasks
+from discord.voice_client import VoiceClient
 from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -36,8 +37,6 @@ bot.remove_command('help')
 # gets the joins-leaves channel
 joins_and_leaves_channel = bot.get_channel(740287906534391829)
 
-general_channel = bot.get_channel(739522722169618519)
-
 # changes the bots working location to where it is located
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -45,6 +44,48 @@ __location__ = os.path.realpath(
 user_data_path = 'user_data.json'
 
 last_quote = 0
+
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
+}
+
+ffmpeg_options = {
+    'options': '-vn'
+}
+
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+
+        self.data = data
+
+        self.title = data.get('title')
+        self.url = data.get('url')
+
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+
+        if 'entries' in data:
+            # take first item from a playlist
+            data = data['entries'][0]
+
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #VARIOUS FUNCTIONS
 
@@ -105,9 +146,6 @@ async def send_image(image, channel):
 async def on_member_join(member):
     holy_role = discord.utils.get(member.guild.roles, id=739594604168347789)
 
-    if member.id == 444258961332502548:
-        await bot.kick(member)
-
     # loads data
     with open(user_data_path, 'r') as user_roles_file:
             user_data = json.load(user_roles_file)
@@ -160,10 +198,12 @@ async def on_member_remove(member):
 async def on_ready():
     #sets status
     await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('sex with stalin'))
-
     # getting the server
     global guild
     guild = bot.get_guild(739522722169618516)
+
+    global announcments_channel
+    announcments_channel = discord.utils.get(guild.channels, id = 741711058044977285)
 
     # variables for on_message, put here to make it look cleaner
     global last_author
@@ -232,12 +272,7 @@ async def on_message(message):
         #checks if the message is in emoji channel and then checks if the message is an emoji or not
         msg_content = message.content
         if str(message.channel.id) == "740299204307714216":
-            
-            
-            
-            
-            
-            
+
             #I made it so he just deletes the message
             if not (any(str(emoji) in msg_content for emoji in message.guild.emojis)) and not (any(str(emoji) in msg_content for emoji in UNICODE_EMOJI)):
                 await message.delete() 
@@ -307,9 +342,9 @@ async def on_message(message):
 
                 # informs the traitor
                 await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-    A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-    AND YOU SHALL PAY,
-    YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
+        A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+        AND YOU SHALL PAY,
+        YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
 
 
                 # mutes them
@@ -363,14 +398,37 @@ async def on_message(message):
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #CLIENT COMMANDS
 
-# #vote initate command
-# @bot.command()
-# async def init_vote(ctx):
-#     await ctx.send("voting subject")
-#     voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-#     await ctx.send("time to vote (hours)")
-#     voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-#     await ctx.send(f"@everyone A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
+#vote initate command
+@bot.command()
+async def init_vote(ctx):
+    await ctx.send("voting subject")
+    voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+    await ctx.send("time to vote (hours)")
+    voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+    await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
+    #add json to store votes and what people voted, also add a voting commadd
+
+# promote and demote
+@bot.command()
+async def demote(ctx,*,request):
+    member = ctx.message.author
+    if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
+        request = request.split(', ') 
+        
+        roles = member.guild.roles
+        members = member.guild.members
+        
+        role_to_demote = None
+        for role in roles:
+            if str(role) == request[1]:
+                role_to_demote = role
+                
+        member_to_demote = None
+        for user in members:
+            if str(user) == request[0]:
+                member_to_demote = user
+         
+        await member_to_demote.remove_roles(role_to_demote)
 
 #quote command
 @bot.command()
@@ -625,6 +683,9 @@ async def whos_that_pokemon(ctx):
             await ctx.send(f"im devistated {sad_zeggy}")
             break
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#MUSIC
+
 #bomb, i really want this removed but i doubt that theo would permit such an action
 @bot.command(pass_context=True)
 async def bomb(ctx):
@@ -638,8 +699,29 @@ async def bomb(ctx):
         await voice.disconnect()
 
 @bot.command()
-async def kick(ctx, member : discord.Member, *, reason=None):
-    await member.kick(reason=reason)
+async def play(ctx, url):
+    if not ctx.message.author.voice:
+        await ctx.send("YOU BABBLING BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
+        return
+    
+    else:
+        channel = ctx.message.author.voice.channel
+
+    await channel.connect()
+
+    server = ctx.message.guild
+    voice_channel = server.voice_client
+    
+    async with ctx.typing():
+        player = await YTDLSource.from_url(url, loop=bot.loop)
+        voice_channel.play(player, after=lambda e: print('stupid dumb idiot thing happen: %s' % e) if e else None)
+
+    await ctx.send('playing {}'.format(player.title))
+
+@bot.command()
+async def leave(ctx):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+    await voice.disconnect()
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
