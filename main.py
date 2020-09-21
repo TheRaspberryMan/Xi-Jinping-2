@@ -34,9 +34,6 @@ bot = commands.Bot(command_prefix='!')
 
 bot.remove_command('help')
 
-# gets the joins-leaves channel
-joins_and_leaves_channel = bot.get_channel(740287906534391829)
-
 # changes the bots working location to where it is located
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -203,17 +200,24 @@ async def on_ready():
     guild = bot.get_guild(739522722169618516)
 
     global announcments_channel
+    global joins_and_leaves_channel
+    global emoji_channel
+    joins_and_leaves_channel = discord.utils.get(guild.channels, id = 740287906534391829)
     announcments_channel = discord.utils.get(guild.channels, id = 741711058044977285)
+    emoji_channel = discord.utils.get(guild.channels, id = 740299204307714216)
+
 
     # variables for on_message, put here to make it look cleaner
     global last_author
     global messages
     global muterole
+    global beleiverrole
+    global jacksonrole
     global last_time
-    global emoji_channel
     
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
-    emoji_channel = bot.get_channel(740299204307714216)
+    beleiverrole = discord.utils.get(guild.roles, id=741400413689085973)
+    jacksonrole = discord.utils.get(guild.roles, id=740011949324238899)
     messages = 0
     last_author = ''
     last_time = 0
@@ -429,6 +433,28 @@ async def demote(ctx,*,request):
                 member_to_demote = user
          
         await member_to_demote.remove_roles(role_to_demote)
+
+# promote and demote
+@bot.command()
+async def promote(ctx,*,request):
+    member = ctx.message.author
+    if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
+        request = request.split(', ') 
+        
+        roles = member.guild.roles
+        members = member.guild.members
+        
+        role_to_demote = None
+        for role in roles:
+            if str(role) == request[1]:
+                role_to_demote = role
+                
+        member_to_demote = None
+        for user in members:
+            if str(user) == request[0]:
+                member_to_demote = user
+         
+        await member_to_demote.add_roles(role_to_demote)
 
 #quote command
 @bot.command()
@@ -687,21 +713,21 @@ async def whos_that_pokemon(ctx):
 #MUSIC
 
 #bomb, i really want this removed but i doubt that theo would permit such an action
-@bot.command(pass_context=True)
-async def bomb(ctx):
-    if (ctx.message.author.id in [351707203981541378, 239150965217820672]):
-        await ctx.message.author.voice.channel.connect()
-        voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
-        voice.play(discord.FFmpegPCMAudio('Boom.mp3'))
-        voice.volume = 100
-        while voice.is_playing():
-            continue
-        await voice.disconnect()
+# @bot.command(pass_context=True)
+# async def bomb(ctx):
+#     if (ctx.message.author.id in [351707203981541378, 239150965217820672]):
+#         await ctx.message.author.voice.channel.connect()
+#         voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+#         voice.play(discord.FFmpegPCMAudio('Boom.mp3'))
+#         voice.volume = 100
+#         while voice.is_playing():
+#             continue
+#         await voice.disconnect()
 
 @bot.command()
 async def play(ctx, url):
     if not ctx.message.author.voice:
-        await ctx.send("YOU BABBLING BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
+        await ctx.send("YOU BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
         return
     
     else:
@@ -712,11 +738,16 @@ async def play(ctx, url):
     server = ctx.message.guild
     voice_channel = server.voice_client
     
-    async with ctx.typing():
-        player = await YTDLSource.from_url(url, loop=bot.loop)
-        voice_channel.play(player, after=lambda e: print('stupid dumb idiot thing happen: %s' % e) if e else None)
+    
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+    player = await YTDLSource.from_url(url, loop=bot.loop)
+    voice_channel.play(player, after=lambda e: print('stupid dumb idiot thing happen: %s' % e) if e else None)
 
     await ctx.send('playing {}'.format(player.title))
+
+    while voice.is_playing():
+        continue
+    await voice.disconnect()
 
 @bot.command()
 async def leave(ctx):
@@ -731,6 +762,12 @@ async def leave(ctx):
 async def manage_offences():
 
     global muterole
+
+    global beleiverrole
+
+    gaming_cam = discord.utils.get(guild.members, id=int(239150965217820672))
+
+    #await gaming_cam.add_roles()
 
     # loads the data
     with open(user_data_path, 'r') as user_data_file:
