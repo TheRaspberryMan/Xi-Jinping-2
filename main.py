@@ -2,6 +2,7 @@ import os
 import re
 import json
 import pokepy
+import requests
 import discord
 import youtube_dl
 import discord.utils
@@ -214,14 +215,34 @@ async def on_ready():
     global beleiverrole
     global jacksonrole
     global last_time
-    
+    global botterrole
+    global badrole
+    global alistair_perms
+    global alistair_house
+    global alistair_house_good
+    global minebot
+    global denizen
+    global perm_role
+    # for role in guild.roles:
+    #     print(role)
+    #     print(role.id)
+    perm_role = discord.utils.get(guild.roles, id=758080199744028714)
+    denizen = discord.utils.get(guild.roles, id=758080252936192033)
+    minebot = discord.utils.get(guild.roles, id=741736769992785972)
+    alistair_house_good = discord.utils.get(guild.roles, id=757953951046959135)
+    alistair_house = discord.utils.get(guild.roles, id=749805088607830036)
+    alistair_perms = discord.utils.get(guild.roles, id=758079462100172951)
+    badrole = discord.utils.get(guild.roles, id=739680352993280001)
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
     beleiverrole = discord.utils.get(guild.roles, id=741400413689085973)
     jacksonrole = discord.utils.get(guild.roles, id=740011949324238899)
+    botterrole = discord.utils.get(guild.roles, id=739525417702260826)
     messages = 0
     last_author = ''
     last_time = 0
 
+    for permission in minebot.permissions:
+        print(permission)
 
     # variables for free game check
     global old_games
@@ -238,21 +259,31 @@ async def on_ready():
     # emojis
     global sad_zeggy
     sad_zeggy = discord.utils.get(guild.emojis, name='Sad_Zeggy')
+    global cool_zeggy
+    cool_zeggy = discord.utils.get(guild.emojis, name='Cool_Zeggy')
+    global anarchist_zeggy
+    anarchist_zeggy = discord.utils.get(guild.emojis, name='Anarchist_Zeggy')
+    global anime_zeggy
+    anime_zeggy = discord.utils.get(guild.emojis, name='Anieggy')
+    global ninja_zeggy
+    ninja_zeggy = discord.utils.get(guild.emojis, name='Zinja')
+    global thwomp_zeggy
+    thwomp_zeggy = discord.utils.get(guild.emojis, name='Thweggy')
 
 
     # generates json
     for member in guild.members:
         add_member_to_json(member)
 
-    #starts the manage offences loop
+    #starts all loops
     manage_offences.start()
+
 
     print("I'm ready to ping some pongs\n")
 
 #event command for xp and muting
 @bot.event
 async def on_message(message):
-
 
     # variables for later use
     global last_author
@@ -279,15 +310,7 @@ async def on_message(message):
 
             #I made it so he just deletes the message
             if not (any(str(emoji) in msg_content for emoji in message.guild.emojis)) and not (any(str(emoji) in msg_content for emoji in UNICODE_EMOJI)):
-                await message.delete() 
-            
-            
-                
-            #         print("there is text!")
-            #         await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-            # A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-            # AND YOU SHALL PAY FOR YOUR SINS, 
-            # YOU HAVE BEEN WARNED!!!#@!#!@#!@!!@#!@#!@#!@#!@@!@@!!!!""")
+                await message.delete()
         
         else:
             
@@ -297,32 +320,46 @@ async def on_message(message):
                 with open(user_data_path, 'r') as user_data_file:
                     await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
 
-            #ping balance
+            #ping level
             if str(message.content.upper()) == "!PING LEVEL":
                 with open(user_data_path, 'r') as user_data_file:
-                    await message.channel.send(f"you are level {json.load(user_data_file)['xp'][str(message.author.id)][1]}")
+                    poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
+                    await message.channel.send(f"you are level {poggers_level - 1}")
 
-            #says hello
-            if (str(message.content.upper()) in ["HELLO XIJINPING", "HELLO XI JINPING", "HELLO XI", "HELLO MR.XI"]):
-                await message.channel.send(f"hello {message.author.name}")
+            if message.channel.id == 748677664667336735:
+                #says hello
+                if (str(message.content.upper()) in ["HELLO XIJINPING", "HELLO XI JINPING", "HELLO XI", "HELLO MR.XI"]):
+                    await message.channel.send(f"hello {message.author.name}")
 
-            #says hello
-            if (str(message.content.upper()) in ["GOODNIGHT XIJINPING", "GOOD NIGHT XIJINPING", "GOODNIGHT XI JINPING", "GOODNIGHT XIJINPING", "GOODNIGHT XI", "GOOD NIGHT XI", "GOODNIGHT MR.XI", "GOOD NIGHT MR.XI"]):
-                await message.channel.send(f"goodnight {message.author.name}")
+                #says hello
+                if (str(message.content.upper()) in ["GOODNIGHT XIJINPING", "GOOD NIGHT XIJINPING", "GOODNIGHT XI JINPING", "GOODNIGHT XIJINPING", "GOODNIGHT XI", "GOOD NIGHT XI", "GOODNIGHT MR.XI", "GOOD NIGHT MR.XI"]):
+                    await message.channel.send(f"goodnight {message.author.name}")
 
-            #says hello
-            if (str(message.content.upper()) in ["GOOD MORNING XIJINPING", "GOOD MORNING XI JINPING", "GOODMORNING XIJINPING", "GOODMORNING XI JINPING", "GOODMORNING XI", "GOOD MORNING XI", "GOODMORNING MR.XI", "GOOD MORNING MR.XI"]):
-                await message.channel.send(f"good morning {message.author.name}")
-            
-            #says you're welcome
-            if (str(message.content.upper()) in ["THANK YOU XIJINPING", "THANK YOU XI JINPING", "THANK YOU XI", "THANK YOU MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI"]):
-                await message.channel.send(f"you're welcome {message.author.name}")
+                #says hello
+                if (str(message.content.upper()) in ["GOOD MORNING XIJINPING", "GOOD MORNING XI JINPING", "GOODMORNING XIJINPING", "GOODMORNING XI JINPING", "GOODMORNING XI", "GOOD MORNING XI", "GOODMORNING MR.XI", "GOOD MORNING MR.XI"]):
+                    await message.channel.send(f"good morning {message.author.name}")
+                
+                #says you're welcome
+                if (str(message.content.upper()) in ["THANK YOU XIJINPING", "THANK YOU XI JINPING", "THANK YOU XI", "THANK YOU MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI"]):
+                    await message.channel.send(f"you're welcome {message.author.name}")
+
+            #tasty porn
+            if (str(message.content.lower()) in ["https://www.pornhub.com", "https://www.pornhub.com/", "https://hentaihaven.org", "https://hentaihaven.org/", "https://www.xvideos.com"]):
+                await message.channel.send(f"tasty porn")
+                await message.delete()
+
+            if "DUDE" in str(message.content.upper()) or "CRINGE" in str(message.content.upper()):
+                await message.add_reaction("👎")
 
             #talks about butter
             if (str(message.content.upper()) in ["I LIKE BUTTER", "I LOVE BUTTER"]):
                 says_butter = randint(1, 5)
                 if says_butter == 2:
                     await message.channel.send('''Wow, a cow made of butter. My girls would love it. In fact, the first sentence Caroline ever said was "I like butter"''')
+                else:
+                    await message.add_reaction("👎")
+
+            says_mean_thing = randint(1, 100)
 
             if says_mean_thing == 25:
                 await message.channel.send(f"well {message.author.name}, i guess i must have early onset Alzheimer's, because i dont remember asking.")
@@ -726,6 +763,7 @@ async def whos_that_pokemon(ctx):
 
 @bot.command()
 async def play(ctx, url):
+    print("joining")
     if not ctx.message.author.voice:
         await ctx.send("YOU BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
         return
@@ -738,36 +776,68 @@ async def play(ctx, url):
     server = ctx.message.guild
     voice_channel = server.voice_client
     
-    
     voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
     player = await YTDLSource.from_url(url, loop=bot.loop)
     voice_channel.play(player, after=lambda e: print('stupid dumb idiot thing happen: %s' % e) if e else None)
 
     await ctx.send('playing {}'.format(player.title))
 
-    while voice.is_playing():
-        continue
-    await voice.disconnect()
-
 @bot.command()
 async def leave(ctx):
+    print("leaving")
     voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
     await voice.disconnect()
+    print("left")
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
 
+# @tasks.loop(hours=1)
+# async def send_emojis():
+#     emoji_send = randint(1,2)
+#     if emoji_send == 2:
+#         emoji_to_send = randint(1,6)
+#         if emoji_to_send == 1:
+#             await emoji_channel.send(f'{sad_zeggy}')
+#         if emoji_to_send == 2:
+#             await emoji_channel.send(f'{cool_zeggy}')
+#         if emoji_to_send == 3:
+#             await emoji_channel.send(f'{anarchist_zeggy}')
+#         if emoji_to_send == 4:
+#             await emoji_channel.send(f'{anime_zeggy}')
+#         if emoji_to_send == 5:
+#             await emoji_channel.send(f'{ninja_zeggy}')
+#         if emoji_to_send == 5:
+#             await emoji_channel.send(f'{thwomp_zeggy}')
+
 # lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(seconds=30)
 async def manage_offences():
-
     global muterole
 
     global beleiverrole
 
+    global alistair_perms
+
+    global alistair_house
+
+    global alistair_house_good
+
+    global minebot
+
+    global denizen
+
+    global perm_role
+
     gaming_cam = discord.utils.get(guild.members, id=int(239150965217820672))
 
-    #await gaming_cam.add_roles()
+    await gaming_cam.add_roles(botterrole)
+    # await gaming_cam.remove_roles(badrole)
+    # await gaming_cam.remove_roles(alistair_house)
+    # await gaming_cam.remove_roles(alistair_house_good)
+    # await gaming_cam.remove_roles(badrole)
+    # await gaming_cam.remove_roles(alistair_house)
+    # await gaming_cam.remove_roles(alistair_house_good)
 
     # loads the data
     with open(user_data_path, 'r') as user_data_file:
