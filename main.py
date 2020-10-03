@@ -212,37 +212,15 @@ async def on_ready():
     global last_author
     global messages
     global muterole
-    global beleiverrole
-    global jacksonrole
     global last_time
-    global botterrole
-    global badrole
-    global alistair_perms
-    global alistair_house
-    global alistair_house_good
-    global minebot
-    global denizen
-    global perm_role
-    # for role in guild.roles:
-    #     print(role)
-    #     print(role.id)
-    perm_role = discord.utils.get(guild.roles, id=758080199744028714)
-    denizen = discord.utils.get(guild.roles, id=758080252936192033)
-    minebot = discord.utils.get(guild.roles, id=741736769992785972)
-    alistair_house_good = discord.utils.get(guild.roles, id=757953951046959135)
-    alistair_house = discord.utils.get(guild.roles, id=749805088607830036)
-    alistair_perms = discord.utils.get(guild.roles, id=758079462100172951)
-    badrole = discord.utils.get(guild.roles, id=739680352993280001)
+    global product_exists
+
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
-    beleiverrole = discord.utils.get(guild.roles, id=741400413689085973)
-    jacksonrole = discord.utils.get(guild.roles, id=740011949324238899)
-    botterrole = discord.utils.get(guild.roles, id=739525417702260826)
+
+    product_exists = False
     messages = 0
     last_author = ''
     last_time = 0
-
-    for permission in minebot.permissions:
-        print(permission)
 
     # variables for free game check
     global old_games
@@ -250,7 +228,6 @@ async def on_ready():
     game_deals = bot.get_channel(739529274964574360)
     print(f"Got channel {game_deals}\n")
     old_games = []
-
     
     # random words
     global r
@@ -269,7 +246,6 @@ async def on_ready():
     ninja_zeggy = discord.utils.get(guild.emojis, name='Zinja')
     global thwomp_zeggy
     thwomp_zeggy = discord.utils.get(guild.emojis, name='Thweggy')
-
 
     # generates json
     for member in guild.members:
@@ -300,154 +276,112 @@ async def on_message(message):
         xp_dict = user_data['xp']
         offences = user_data['offences']
     
-
     # checks that the message author is not a bot
     if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362, 748564047649177610]):
         #commands that use spaces
         #checks if the message is in emoji channel and then checks if the message is an emoji or not
         msg_content = message.content
         if str(message.channel.id) == "740299204307714216":
-
             #I made it so he just deletes the message
             if not (any(str(emoji) in msg_content for emoji in message.guild.emojis)) and not (any(str(emoji) in msg_content for emoji in UNICODE_EMOJI)):
                 await message.delete()
-        
+
+        # if str(message.channel.id) == "744264609875230741":
+        #     await message.delete()
+    
+        #ping balance
+        if str(message.content.upper()) == "!PING BUX":
+            with open(user_data_path, 'r') as user_data_file:
+                await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
+
+        #ping level
+        if str(message.content.upper()) == "!PING LEVEL":
+            with open(user_data_path, 'r') as user_data_file:
+                poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
+                await message.channel.send(f"you are level {poggers_level - 1}")
+
+        if "DUDE" in str(message.content.upper()) or "CRINGE" in str(message.content.upper()):
+            await message.add_reaction("👎")
+
+        says_mean_thing = randint(1, 100)
+
+        if says_mean_thing == 25:
+            await message.channel.send(f"well {message.author.name}, i guess i must have early onset Alzheimer's, because i dont remember asking.")
+
+        #anti spam
+        if time() - last_time < 0.75 and last_author == author.id:
+            messages += 1
+
         else:
-            
+            messages = 0
         
-            #ping balance
-            if str(message.content.upper()) == "!PING BUX":
-                with open(user_data_path, 'r') as user_data_file:
-                    await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
-
-            #ping level
-            if str(message.content.upper()) == "!PING LEVEL":
-                with open(user_data_path, 'r') as user_data_file:
-                    poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
-                    await message.channel.send(f"you are level {poggers_level - 1}")
-
-            if message.channel.id == 748677664667336735:
-                #says hello
-                if (str(message.content.upper()) in ["HELLO XIJINPING", "HELLO XI JINPING", "HELLO XI", "HELLO MR.XI"]):
-                    await message.channel.send(f"hello {message.author.name}")
-
-                #says hello
-                if (str(message.content.upper()) in ["GOODNIGHT XIJINPING", "GOOD NIGHT XIJINPING", "GOODNIGHT XI JINPING", "GOODNIGHT XIJINPING", "GOODNIGHT XI", "GOOD NIGHT XI", "GOODNIGHT MR.XI", "GOOD NIGHT MR.XI"]):
-                    await message.channel.send(f"goodnight {message.author.name}")
-
-                #says hello
-                if (str(message.content.upper()) in ["GOOD MORNING XIJINPING", "GOOD MORNING XI JINPING", "GOODMORNING XIJINPING", "GOODMORNING XI JINPING", "GOODMORNING XI", "GOOD MORNING XI", "GOODMORNING MR.XI", "GOOD MORNING MR.XI"]):
-                    await message.channel.send(f"good morning {message.author.name}")
-                
-                #says you're welcome
-                if (str(message.content.upper()) in ["THANK YOU XIJINPING", "THANK YOU XI JINPING", "THANK YOU XI", "THANK YOU MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI", "TY XIJINPING", "TY XI JINPING", "TY XI", "TY MR.XI"]):
-                    await message.channel.send(f"you're welcome {message.author.name}")
-
-            #tasty porn
-            if (str(message.content.lower()) in ["https://www.pornhub.com", "https://www.pornhub.com/", "https://hentaihaven.org", "https://hentaihaven.org/", "https://www.xvideos.com"]):
-                await message.channel.send(f"tasty porn")
-                await message.delete()
-
-            if "DUDE" in str(message.content.upper()) or "CRINGE" in str(message.content.upper()):
-                await message.add_reaction("👎")
-
-            #talks about butter
-            if (str(message.content.upper()) in ["I LIKE BUTTER", "I LOVE BUTTER"]):
-                says_butter = randint(1, 5)
-                if says_butter == 2:
-                    await message.channel.send('''Wow, a cow made of butter. My girls would love it. In fact, the first sentence Caroline ever said was "I like butter"''')
-                else:
-                    await message.add_reaction("👎")
-
-            says_mean_thing = randint(1, 100)
-
-            if says_mean_thing == 25:
-                await message.channel.send(f"well {message.author.name}, i guess i must have early onset Alzheimer's, because i dont remember asking.")
-
-            #anti spam
-            if time() - last_time < 0.75 and last_author == author.id:
-                messages += 1
-
-            else:
-                messages = 0
+        if messages > 4:
             
-            if messages > 4:
-                
-                # gets the users current offences
-                current_offences = offences[str(author.id)][0] + 1
-                
-                # gets the time they should be muted for 
-                mute_time = time() + ((current_offences - 1) * 60 + 60)
-                mute_time_in_seconds = mute_time - time()
-                print(f'Muted {author.name} for {mute_time_in_seconds} seconds \n{author.name} has {current_offences} offences')
+            # gets the users current offences
+            current_offences = offences[str(author.id)][0] + 1
+            
+            # gets the time they should be muted for 
+            mute_time = time() + ((current_offences - 1) * 60 + 60)
+            mute_time_in_seconds = mute_time - time()
+            print(f'Muted {author.name} for {mute_time_in_seconds} seconds \n{author.name} has {current_offences} offences')
 
-                # informs the traitor
-                await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-        A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-        AND YOU SHALL PAY,
-        YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
+            # informs the traitor
+            await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
+    A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+    AND YOU SHALL PAY,
+    YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
 
 
-                # mutes them
-                await author.add_roles(muterole)
-                
-                offences[str(author.id)] = [current_offences, mute_time]
+            # mutes them
+            await author.add_roles(muterole)
+            
+            offences[str(author.id)] = [current_offences, mute_time]
 
-                with open(user_data_path, 'w') as user_data_file:
-                    json.dump(user_data, user_data_file)
+            with open(user_data_path, 'w') as user_data_file:
+                json.dump(user_data, user_data_file)
 
-            else:
-                #not working rn and i dont feel like fixing it
-                # if str(message.content.upper()) == "!store buy test product":
-                #     with open('user_data.json', 'r') as user_data_file:
-                #         user_data = json.load(user_data_file)
-                #         money_dict = user_data['money']
-                #     for key in money_dict:
-                #         if key == str(message.author.id):
-                #             money = money_dict[str(key)]
-                #     if int(money) > 15:
-                #         await message.channel.send("gamer")
-                #     else:
-                #         await message.channel.send("not gamer")
+            with open('user_data.json', 'r') as user_data_file:
+                user_data = json.load(user_data_file)
+                xp_and_level = user_data['xp']
 
-                with open('user_data.json', 'r') as user_data_file:
-                    user_data = json.load(user_data_file)
-                    xp_and_level = user_data['xp']
+            xp = xp_and_level[str(author.id)][0]
+            level = xp_and_level[str(author.id)][1]
 
-                xp = xp_and_level[str(author.id)][0]
-                level = xp_and_level[str(author.id)][1]
+            if xp >= level ** 2:
 
-                if xp >= level ** 2:
-
-                    xp_and_level[str(author.id)][1] += 1
-                    await message.channel.send(f"WOW you just increased you ping level to {level}")
-                
-                xp_and_level[str(author.id)][0] += 1
-                with open(user_data_path, 'w') as user_data_file:
-                    json.dump(user_data, user_data_file)
-
-        
-            # getting a time to compare to 
-            last_time = time()
-
-            # sets who messaged last
-            last_author = author.id
+                xp_and_level[str(author.id)][1] += 1
+                await message.channel.send(f"WOW you just increased you ping level to {level}")
+            
+            xp_and_level[str(author.id)][0] += 1
+            with open(user_data_path, 'w') as user_data_file:
+                json.dump(user_data, user_data_file)
 
             # makes it so commands still work
             await bot.process_commands(message)
 
+        # makes it so commands still work
+        await bot.process_commands(message)
+
+        # getting a time to compare to 
+        last_time = time()
+
+        # sets who messaged last
+        last_author = author.id
+
+            
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #CLIENT COMMANDS
 
-#vote initate command
-@bot.command()
-async def init_vote(ctx):
-    await ctx.send("voting subject")
-    voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-    await ctx.send("time to vote (hours)")
-    voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-    await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
-    #add json to store votes and what people voted, also add a voting commadd
+# #vote initate command
+# @bot.command()
+# async def init_vote(ctx):
+#     await ctx.send("voting subject")
+#     voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+#     await ctx.send("time to vote (hours)")
+#     voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+#     await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
+#     #add json to store votes and what people voted, also add a voting commadd
 
 # promote and demote
 @bot.command()
@@ -499,10 +433,20 @@ async def quote(ctx):
     with open('user_data.json', 'r') as user_data_file:
         user_data = json.load(user_data_file)
         quotes = user_data['quotes']
+        last_quote = quotes["19"]
+        print(last_quote)
     if datetime.today().hour >= last_quote + 1:
+        last_quote = datetime.today().hour + 1
+        print(last_quote)
         quote_to_use = randint(1, 18)
-        print(quotes[str(quote_to_use)])
         await ctx.send(quotes[str(quote_to_use)])
+        quotes["19"] = last_quote
+        user_data["quotes"] = quotes
+        with open(user_data_path, 'w') as user_data_file:
+            json.dump(user_data, user_data_file)
+    else:
+        await ctx.send(f"Unfortunatley, my quote reservoir has run dry, come back in a soon. {sad_zeggy}")
+
 
 #help command
 @bot.command()
@@ -517,9 +461,121 @@ async def help(ctx):
 
 #displays store items
 @bot.command()
-async def market(ctx):
-    await ctx.send('''the ping store:
-    test product....................(15 ping bux) please dont buy, this is just a test''')
+async def market(ctx,*,request):
+    global product_exists
+    request = request.split(' ')
+    market_function = request[0]
+    product_exists == False
+    with open(user_data_path, 'r') as user_data_file:
+        user_data = json.load(user_data_file)
+        market_products = user_data['market products']
+        money_dict = user_data['money']
+        user_inventories = user_data['user inventories']
+        user_inventory = user_inventories[str(ctx.message.author.id)]
+    user_wallet = money_dict[str(ctx.message.author.id)]
+
+    if market_function.upper() == "BUY":
+        product_to_buy = request[1]
+        quantity_to_buy = request[2]
+        for product in market_products:
+            if product.upper() == product_to_buy.upper():
+                if request[2] == "1":
+                    product_value = market_products[product[0]]
+                    product_exists = True
+                    cost = int(product_value) * int(quantity_to_buy)
+                    await ctx.send(f'{quantity_to_buy} {product_to_buy} will cost you {cost}, are you sure that you want to purchase this? (Y/N)')
+                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                    if response.content.upper() == "Y":
+                        if user_wallet >= int(product_value) * int(quantity_to_buy):
+                            await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
+                            money_dict[str(ctx.message.author.id)] -= cost
+                            user_inventory[request[1]] += int(quantity_to_buy)
+                            with open(user_data_path, 'w') as user_data_file:
+                                json.dump(user_data, user_data_file)
+                        else:
+                            await ctx.send(f"@Zeggy give me a line here $@# {quantity_to_buy} {request[1].upper()}")
+                    else:
+                        await ctx.send(f"{sad_zeggy}")
+                else:
+                    product_value = market_products[product[0]]
+                    product_exists = True
+                    cost = int(product_value) * int(quantity_to_buy)
+                    await ctx.send(f'{quantity_to_buy} {product_to_buy}s will cost you {cost}, are you sure that you want to purchase this? (Y/N)')
+                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                    if response.content.upper() == "Y":
+                        if user_wallet >= int(product_value) * int(quantity_to_buy):
+                            await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
+                            money_dict[str(ctx.message.author.id)] -= cost
+                            user_inventory[request[1]] += int(quantity_to_buy)
+                            with open(user_data_path, 'w') as user_data_file:
+                                json.dump(user_data, user_data_file)
+                        else:
+                            await ctx.send(f"@Zeggy give me a line here ($# {quantity_to_buy} {request[1].upper()}")
+                    else:
+                        await ctx.send(f"{sad_zeggy}")
+
+        if product_exists == False:
+            await ctx.send("@Zeggy give me a line here *$!")
+    elif market_function.upper() == "SELL":
+        product_to_sell = request[1]
+        quantity_to_sell = request[2]
+        for product in market_products:
+            if product.upper() == product_to_sell.upper():
+                if request[2] == "1":
+                    poggers = market_products[product]
+                    product_value = poggers[1]
+                    product_exists = True
+                    cost = int(product_value) * int(quantity_to_sell)
+                    await ctx.send(f'{quantity_to_sell} {product_to_sell} will make you {cost}, are you sure that you want to sell this? (Y/N)')
+                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                    if response.content.upper() == "Y":
+                        if user_inventory[request[1]] >= int(quantity_to_sell):
+                            await ctx.send(f"{quantity_to_sell} {request[1]} was removed from your inventory")
+                            money_dict[str(ctx.message.author.id)] += cost
+                            user_inventory[request[1]] -= int(quantity_to_sell)
+                            with open(user_data_path, 'w') as user_data_file:
+                                json.dump(user_data, user_data_file)
+                        else:
+                            await ctx.send("@Zeggy give me a line here $@#")
+                    else:
+                        await ctx.send(f"{sad_zeggy}")
+                else:
+                    poggers = market_products[product]
+                    product_value = poggers[1]
+                    product_exists = True
+                    cost = int(product_value) * int(quantity_to_sell)
+                    await ctx.send(f'{quantity_to_sell} {product_to_sell}s will make you {cost}, are you sure that you want to sell this? (Y/N)')
+                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                    if response.content.upper() == "Y":
+                        if user_inventory[request[1]] >= int(quantity_to_sell):
+                            await ctx.send(f"{quantity_to_sell} {request[1]}s were removed from your inventory")
+                            money_dict[str(ctx.message.author.id)] += cost
+                            user_inventory[request[1]] -= int(quantity_to_sell)
+                            with open(user_data_path, 'w') as user_data_file:
+                                json.dump(user_data, user_data_file)
+                        else:
+                            await ctx.send("@Zeggy give me a line here $@#")
+                    else:
+                        await ctx.send(f"{sad_zeggy}")
+    else:
+        await ctx.send("@Zeggy give me a line here $&^")
+    
+@bot.command()
+async def quantity(ctx,*,request):
+    request = request.split(' ')
+    with open(user_data_path, 'r') as user_data_file:
+        user_data = json.load(user_data_file)
+        user_inventories = user_data['user inventories']
+        user_inventory = user_inventories[str(ctx.message.author.id)]
+    for key in user_inventory:
+        if key == request[0]:
+            await ctx.send(f"you have {user_inventory[request[0]]} {request[0]}s")   
+
+@bot.command()
+async def give_money(ctx,*,request):
+    request = request.split(' ')
+    if ctx.message.author.id in [239150965217820672, 351707203981541378]:
+        await change_ping_bucks(ctx.message.author.id, int(request[0]), ctx.message.channel, True)
 
 #number guessing
 @bot.command()
@@ -593,7 +649,7 @@ async def view_json(ctx):
     with open('user_data.json') as user_data_file:
         user_data = json.load(user_data_file)
         print(json.dumps(user_data, indent=4, sort_keys=True))
-
+    
 #gets users currnet balance
 @bot.command()
 async def ping_bal(ctx):
@@ -792,52 +848,10 @@ async def leave(ctx):
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
 
-# @tasks.loop(hours=1)
-# async def send_emojis():
-#     emoji_send = randint(1,2)
-#     if emoji_send == 2:
-#         emoji_to_send = randint(1,6)
-#         if emoji_to_send == 1:
-#             await emoji_channel.send(f'{sad_zeggy}')
-#         if emoji_to_send == 2:
-#             await emoji_channel.send(f'{cool_zeggy}')
-#         if emoji_to_send == 3:
-#             await emoji_channel.send(f'{anarchist_zeggy}')
-#         if emoji_to_send == 4:
-#             await emoji_channel.send(f'{anime_zeggy}')
-#         if emoji_to_send == 5:
-#             await emoji_channel.send(f'{ninja_zeggy}')
-#         if emoji_to_send == 5:
-#             await emoji_channel.send(f'{thwomp_zeggy}')
-
 # lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(seconds=30)
 async def manage_offences():
     global muterole
-
-    global beleiverrole
-
-    global alistair_perms
-
-    global alistair_house
-
-    global alistair_house_good
-
-    global minebot
-
-    global denizen
-
-    global perm_role
-
-    gaming_cam = discord.utils.get(guild.members, id=int(239150965217820672))
-
-    await gaming_cam.add_roles(botterrole)
-    # await gaming_cam.remove_roles(badrole)
-    # await gaming_cam.remove_roles(alistair_house)
-    # await gaming_cam.remove_roles(alistair_house_good)
-    # await gaming_cam.remove_roles(badrole)
-    # await gaming_cam.remove_roles(alistair_house)
-    # await gaming_cam.remove_roles(alistair_house_good)
 
     # loads the data
     with open(user_data_path, 'r') as user_data_file:
