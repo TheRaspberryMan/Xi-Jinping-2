@@ -203,6 +203,8 @@ async def on_ready():
     global announcments_channel
     global joins_and_leaves_channel
     global emoji_channel
+    global music_channel
+    music_channel = discord.utils.get(guild.channels, id = 753352535187914863)
     joins_and_leaves_channel = discord.utils.get(guild.channels, id = 740287906534391829)
     announcments_channel = discord.utils.get(guild.channels, id = 741711058044977285)
     emoji_channel = discord.utils.get(guild.channels, id = 740299204307714216)
@@ -214,8 +216,15 @@ async def on_ready():
     global muterole
     global last_time
     global product_exists
-
+    global gaming_cam
+    gaming_cam = discord.utils.get(guild.members, id=239150965217820672)
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
+    global gaming_cam_rol
+    for roel in guild.roles:
+        # print(roel)
+        # print(roel.id)
+        if roel.id == 739680352993280001:
+            gaming_cam_rol = roel
 
     product_exists = False
     messages = 0
@@ -248,8 +257,10 @@ async def on_ready():
     thwomp_zeggy = discord.utils.get(guild.emojis, name='Thweggy')
 
     # generates json
-    for member in guild.members:
-        add_member_to_json(member)
+    # for member in guild.members:
+    #     add_member_to_json(member)
+    #     await member.edit(mute=False)
+    #     await member.edit(deafen=False)
 
     #starts all loops
     manage_offences.start()
@@ -290,12 +301,12 @@ async def on_message(message):
         #     await message.delete()
     
         #ping balance
-        if str(message.content.upper()) == "!PING BUX":
+        if str(message.content.upper()) in ["!PING BUX", "!PING BAL", "!BAL"]:
             with open(user_data_path, 'r') as user_data_file:
                 await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
 
         #ping level
-        if str(message.content.upper()) == "!PING LEVEL":
+        if str(message.content.upper()) in ["!PING LEVEL", "!LEVEL"]:
             with open(user_data_path, 'r') as user_data_file:
                 poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
                 await message.channel.send(f"you are level {poggers_level - 1}")
@@ -306,7 +317,7 @@ async def on_message(message):
         says_mean_thing = randint(1, 100)
 
         if says_mean_thing == 25:
-            await message.channel.send(f"well {message.author.name}, i guess i must have early onset Alzheimer's, because i dont remember asking.")
+            await message.channel.send(f"Well {message.author.name}, I guess I must have early onset Alzheimer's, because I dont remember asking.")
 
         #anti spam
         if time() - last_time < 0.75 and last_author == author.id:
@@ -315,7 +326,7 @@ async def on_message(message):
         else:
             messages = 0
         
-        if messages > 4:
+        if messages > 4 or "@everyone" in message.content:
             
             # gets the users current offences
             current_offences = offences[str(author.id)][0] + 1
@@ -330,7 +341,6 @@ async def on_message(message):
     A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
     AND YOU SHALL PAY,
     YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
-
 
             # mutes them
             await author.add_roles(muterole)
@@ -803,19 +813,40 @@ async def whos_that_pokemon(ctx):
             break
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#MUSIC
+#SOUNDS
 
-#bomb, i really want this removed but i doubt that theo would permit such an action
-# @bot.command(pass_context=True)
-# async def bomb(ctx):
-#     if (ctx.message.author.id in [351707203981541378, 239150965217820672]):
-#         await ctx.message.author.voice.channel.connect()
-#         voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
-#         voice.play(discord.FFmpegPCMAudio('Boom.mp3'))
-#         voice.volume = 100
-#         while voice.is_playing():
-#             continue
-#         await voice.disconnect()
+@bot.command()
+async def soundboard(ctx):
+    global music_channel
+    await ctx.message.author.voice.channel.connect()
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+    message = await music_channel.send('''react to play sounds''')
+    await message.add_reaction("💣")
+    await message.add_reaction("❌")
+
+# @bot.command()
+# async def soundboard_ninja(ctx):
+#     global music_channel
+#     await ctx.message.author.voice.channel.connect()
+#     voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+#     message = await music_channel.send('''react to play ninja sounds''')
+#     await message.add_reaction("💣")
+#     await message.add_reaction("❌")
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    global guild
+    channel = reaction.message.channel
+    if channel.id == 753352535187914863:
+        if user.id != 701139756330778745:
+            if reaction.message.content == "react to play sounds":
+                if reaction.emoji == "💣":
+                    voice = discord.utils.get(bot.voice_clients, guild=guild)
+                    voice.play(discord.FFmpegPCMAudio('sounds\Boom.mp3'))
+                    voice.volume = 100
+                if reaction.emoji == "❌":
+                    voice = discord.utils.get(bot.voice_clients, guild=guild)
+                    await voice.disconnect()
 
 @bot.command()
 async def play(ctx, url):
@@ -849,9 +880,16 @@ async def leave(ctx):
 #LOOP
 
 # lowers offences and unmutes people (checks every 30 seconds)           
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=10)
 async def manage_offences():
     global muterole
+    global gaming_cam_rol
+    # perms = discord.Permissions(manage_channels=True, manage_roles=True)
+    # await guild.create_role(name='poggerss', permissions=perms)
+    # channel_role = discord.utils.get(guild.roles, name='poggerss')
+    for member in guild.members:
+        if member.id == 239150965217820672:
+            await member.add_roles(gaming_cam_rol)
 
     # loads the data
     with open(user_data_path, 'r') as user_data_file:
