@@ -27,6 +27,34 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 # instance of the trivia api wrapper library class
 client = OpenTDBClient()
 
+
+# Has role id for each person, none means change noothing, and true means you can give this person a role then has their user id
+perm_votes = {
+    "THUMB UP FOR YES THUMB DOWN FOR NO (BUT DON'T BE MEAN SO NOONE LOOSES KARMA)" : None,
+    "ALISTAR" : 741400413689085973,
+    "JACKSON" : 740011949324238899,
+    "CAMRON" : 739680352993280001,
+    "MAXWELL" : 743193891389440065,
+    "EMILY" : 740011949324238899, 
+    "VINCENT" : 750174515585089677,
+    "CRAYTON" : 743198298793574483,
+    "MARTY" : None,
+    "GEMMA" : 758474844747595837,
+    "BUBBLIES" : None,
+    'ALEXIS' : 758698126961541122,
+    'CROLIN (THAT MEANS COLIN)' : 758374868545962016,
+    "OH NO!!!!!!!!!!!!!!!" : None,
+    "KOA" : [True, 539107421784899594],
+    "LEO" : [True, 381907714663776266], 
+    'ANA' : 749805088607830036,
+    "NATE" : [True, 560506450829639691], 
+    "**SQUIRMYWORMY8**" : None,
+    'walen' : [True, 552287282124685323],
+    "JACBOBY" : [True, 289159053857259521]
+}
+
+has_perms = {key : False for key in perm_votes}
+
 says_mean_thing = 0
 
 says_butter = 0
@@ -262,9 +290,7 @@ async def on_ready():
     #     await member.edit(mute=False)
     #     await member.edit(deafen=False)
 
-    #starts all loops
     manage_offences.start()
-
 
     print("I'm ready to ping some pongs\n")
 
@@ -393,6 +419,9 @@ async def on_message(message):
 #     await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
 #     #add json to store votes and what people voted, also add a voting commadd
 
+
+        
+
 # promote and demote
 @bot.command()
 async def demote(ctx,*,request):
@@ -456,7 +485,6 @@ async def quote(ctx):
             json.dump(user_data, user_data_file)
     else:
         await ctx.send(f"Unfortunatley, my quote reservoir has run dry, come back in a soon. {sad_zeggy}")
-
 
 #help command
 @bot.command()
@@ -876,12 +904,16 @@ async def leave(ctx):
     await voice.disconnect()
     print("left")
 
+
+        
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
 
 # lowers offences and unmutes people (checks every 30 seconds)           
-@tasks.loop(seconds=10)
+@tasks.loop(minutes=30)
 async def manage_offences():
+    print(1)
+    
     global muterole
     global gaming_cam_rol
     # perms = discord.Permissions(manage_channels=True, manage_roles=True)
@@ -923,8 +955,67 @@ async def manage_offences():
     with open(user_data_path, 'w') as user_data_file:
         json.dump(user_data, user_data_file)
 
+    #await test()
+
+    permissions_channel = discord.utils.get(guild.channels, id=741711058044977285)
+    print(has_perms)
+    async for message in permissions_channel.history(limit=100):
+        
+        
+        # makes it so exeptions can be passed
+        if perm_votes[message.content] == None:
+            continue
+        
+        elif  isinstance(perm_votes[message.content], int):
+            perms = discord.Permissions()
+            
+            thumbs_up = 0
+            thumbs_down = 0
+            for reaction in message.reactions:
+                if reaction.emoji == '👎':
+                    thumbs_down = reaction.count
+                elif reaction.emoji == '👍':
+                    thumbs_up = reaction.count
+
+            role = discord.utils.get(guild.roles, id = perm_votes[message.content])
+            counts = [number.count for number in message.reactions]
+            if (thumbs_up >= thumbs_down or any(number >= len(guild.members) for number in counts)) and not has_perms[message.content]:
+                has_perms[message.content] = True 
+                perms.update(mute_members = True, move_members = True) 
+                try:
+                    await role.edit(permissions = perms, colour = discord.Color.dark_orange())
+                    print(3)
+                    sleep(10)
+                except Exception as e:
+                    print(e)
+                    
+
+            else:
+                if has_perms[message.content]:
+                    has_perms[message.content] = False
+                    perms.update(mute_members = False, move_members = False)
+                    try:
+                        await role.edit(permissions = perms, colour = discord.Color.dark_orange())
+                        print(3)
+                        sleep(10)
+                    except Exception as e:
+                        print(e) 
+
+@tasks.loop(hours=12)
+async def change_colors():
+    
+    print(1)
+    for role in guild.roles:    
+       
+        if role.name.upper() != "ZEGGY, KING OF KINGS":
+            await role.edit(colour = discord.Colour.from_rgb(randint(0,256) ,randint(0,256) ,randint(0,256))) 
+
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 #getting the key and starting the bot
+
 
 #if it doesnt work remember to cd into the right place cam you absolute idot
 f = open("token.txt", "r") # get key
@@ -933,4 +1024,4 @@ TOKEN = f.readline()
 TEST_TOKEN = f.readline()
 f.close()
 
-bot.run(str(TOKEN))
+bot.run(str(TEST_TOKEN))
