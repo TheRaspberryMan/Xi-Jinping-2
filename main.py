@@ -234,6 +234,8 @@ async def on_ready():
     # variables for free game check
     global old_games
     global game_deals
+    global bot_is_sleep
+    bot_is_sleep = False
     game_deals = bot.get_channel(739529274964574360)
     print(f"Got channel {game_deals}\n")
     old_games = []
@@ -271,114 +273,113 @@ async def on_ready():
 #event command for xp and muting
 @bot.event
 async def on_message(message):
+    if bot_is_sleep == False:
+        # variables for later use
+        global last_author
+        global messages
+        global muterole
+        global last_time
 
-    # variables for later use
-    global last_author
-    global messages
-    global muterole
-    global last_time
+        # getting the author to a shorter name
+        author = message.author
 
-    # getting the author to a shorter name
-    author = message.author
-
-    # loading user data
-    with open(user_data_path, "r") as user_data_file:
-        user_data = json.load(user_data_file)
-        xp_dict = user_data['xp']
-        offences = user_data['offences']
-    
-    # checks that the message author is not a bot
-    if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362, 748564047649177610]):
-        #commands that use spaces
-        #checks if the message is in emoji channel and then checks if the message is an emoji or not
-        msg_content = message.content
-        if str(message.channel.id) == "740299204307714216":
-            #I made it so he just deletes the message
-            if not (any(str(emoji) in msg_content for emoji in message.guild.emojis)) and not (any(str(emoji) in msg_content for emoji in UNICODE_EMOJI)):
-                await message.delete()
-
-        # if str(message.channel.id) == "744264609875230741":
-        #     await message.delete()
-    
-        #ping balance
-        if str(message.content.upper()) in ["!PING BUX", "!PING BAL", "!BAL"]:
-            with open(user_data_path, 'r') as user_data_file:
-                await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
-
-        #ping level
-        if str(message.content.upper()) in ["!PING LEVEL", "!LEVEL"]:
-            with open(user_data_path, 'r') as user_data_file:
-                poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
-                await message.channel.send(f"you are level {poggers_level - 1}")
-
-        if "DUDE" in str(message.content.upper()) or "CRINGE" in str(message.content.upper()):
-            await message.add_reaction("👎")
-
-        says_mean_thing = randint(1, 100)
-
-        if says_mean_thing == 25:
-            await message.channel.send(f"Well {message.author.name}, I guess I must have early onset Alzheimer's, because I dont remember asking.")
-
-        #anti spam
-        if time() - last_time < 0.75 and last_author == author.id:
-            messages += 1
-
-        else:
-            messages = 0
+        # loading user data
+        with open(user_data_path, "r") as user_data_file:
+            user_data = json.load(user_data_file)
+            xp_dict = user_data['xp']
+            offences = user_data['offences']
         
-        if messages > 4 or "@everyone" in message.content:
+        # checks that the message author is not a bot
+        if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362, 748564047649177610]):
+            #commands that use spaces
+            #checks if the message is in emoji channel and then checks if the message is an emoji or not
+            msg_content = message.content
+            if str(message.channel.id) == "740299204307714216":
+                #I made it so he just deletes the message
+                if not (any(str(emoji) in msg_content for emoji in message.guild.emojis)) and not (any(str(emoji) in msg_content for emoji in UNICODE_EMOJI)):
+                    await message.delete()
+
+            # if str(message.channel.id) == "744264609875230741":
+            #     await message.delete()
+        
+            #ping balance
+            if str(message.content.upper()) in ["!PING BUX", "!PING BAL", "!BAL"]:
+                with open(user_data_path, 'r') as user_data_file:
+                    await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
+
+            #ping level
+            if str(message.content.upper()) in ["!PING LEVEL", "!LEVEL"]:
+                with open(user_data_path, 'r') as user_data_file:
+                    poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
+                    await message.channel.send(f"you are level {poggers_level - 1}")
+
+            if "DUDE" in str(message.content.upper()) or "CRINGE" in str(message.content.upper()):
+                await message.add_reaction("👎")
+
+            says_mean_thing = randint(1, 100)
+
+            if says_mean_thing == 25:
+                await message.channel.send(f"Well {message.author.name}, I guess I must have early onset Alzheimer's, because I dont remember asking.")
+
+            #anti spam
+            if time() - last_time < 0.75 and last_author == author.id:
+                messages += 1
+
+            else:
+                messages = 0
             
-            # gets the users current offences
-            current_offences = offences[str(author.id)][0] + 1
-            
-            # gets the time they should be muted for 
-            mute_time = time() + ((current_offences - 1) * 60 + 60)
-            mute_time_in_seconds = mute_time - time()
-            print(f'Muted {author.name} for {mute_time_in_seconds} seconds \n{author.name} has {current_offences} offences')
+            if messages > 4 or "@everyone" in message.content:
+                
+                # gets the users current offences
+                current_offences = offences[str(author.id)][0] + 1
+                
+                # gets the time they should be muted for 
+                mute_time = time() + ((current_offences - 1) * 60 + 60)
+                mute_time_in_seconds = mute_time - time()
+                print(f'Muted {author.name} for {mute_time_in_seconds} seconds \n{author.name} has {current_offences} offences')
 
-            # informs the traitor
-            await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
-    A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
-    AND YOU SHALL PAY,
-    YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
+                # informs the traitor
+                await message.channel.send(f"""{author.name.upper()} YOU HAVE MADE A GREVIOUS ERROR, 
+        A GREAT LAPSE IN YOUR JUDGEMENT IF YOU WILL,
+        AND YOU SHALL PAY,
+        YOU HAVE BEEN SILENCED FOR {mute_time_in_seconds} SECONDS!!#!!!@3!3!#@!!!""")
 
-            # mutes them
-            await author.add_roles(muterole)
-            
-            offences[str(author.id)] = [current_offences, mute_time]
+                # mutes them
+                await author.add_roles(muterole)
+                
+                offences[str(author.id)] = [current_offences, mute_time]
 
-            with open(user_data_path, 'w') as user_data_file:
-                json.dump(user_data, user_data_file)
+                with open(user_data_path, 'w') as user_data_file:
+                    json.dump(user_data, user_data_file)
 
-            with open('user_data.json', 'r') as user_data_file:
-                user_data = json.load(user_data_file)
-                xp_and_level = user_data['xp']
+                with open('user_data.json', 'r') as user_data_file:
+                    user_data = json.load(user_data_file)
+                    xp_and_level = user_data['xp']
 
-            xp = xp_and_level[str(author.id)][0]
-            level = xp_and_level[str(author.id)][1]
+                xp = xp_and_level[str(author.id)][0]
+                level = xp_and_level[str(author.id)][1]
 
-            if xp >= level ** 2:
+                if xp >= level ** 2:
 
-                xp_and_level[str(author.id)][1] += 1
-                await message.channel.send(f"WOW you just increased you ping level to {level}")
-            
-            xp_and_level[str(author.id)][0] += 1
-            with open(user_data_path, 'w') as user_data_file:
-                json.dump(user_data, user_data_file)
+                    xp_and_level[str(author.id)][1] += 1
+                    await message.channel.send(f"WOW you just increased you ping level to {level}")
+                
+                xp_and_level[str(author.id)][0] += 1
+                with open(user_data_path, 'w') as user_data_file:
+                    json.dump(user_data, user_data_file)
+
+                # makes it so commands still work
+                await bot.process_commands(message)
 
             # makes it so commands still work
             await bot.process_commands(message)
 
-        # makes it so commands still work
-        await bot.process_commands(message)
+            # getting a time to compare to 
+            last_time = time()
 
-        # getting a time to compare to 
-        last_time = time()
-
-        # sets who messaged last
-        last_author = author.id
-
-            
+            # sets who messaged last
+            last_author = author.id
+    await bot.process_commands(message)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #CLIENT COMMANDS
@@ -393,436 +394,464 @@ async def on_message(message):
 #     await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
 #     #add json to store votes and what people voted, also add a voting commadd
 
+#toggles bot sleep
+@bot.command()
+async def sleep(ctx):
+    global bot_is_sleep
+    if ctx.message.author.id in [351707203981541378, 239150965217820672]:
+        print('sleeping bot')
+        bot_is_sleep = True
+        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('sleeping simulator'))
+
+@bot.command()
+async def wake(ctx):
+    global bot_is_sleep
+    if ctx.message.author.id in [351707203981541378, 239150965217820672]:
+        print('waking bot')
+        bot_is_sleep = False
+        await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('sex with stalin'))
+
 # promote and demote
 @bot.command()
 async def demote(ctx,*,request):
-    member = ctx.message.author
-    if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
-        request = request.split(', ') 
-        
-        roles = member.guild.roles
-        members = member.guild.members
-        
-        role_to_demote = None
-        for role in roles:
-            if str(role) == request[1]:
-                role_to_demote = role
-                
-        member_to_demote = None
-        for user in members:
-            if str(user) == request[0]:
-                member_to_demote = user
-         
-        await member_to_demote.remove_roles(role_to_demote)
+    if bot_is_sleep == False:
+        member = ctx.message.author
+        if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
+            request = request.split(', ') 
+            
+            roles = member.guild.roles
+            members = member.guild.members
+            
+            role_to_demote = None
+            for role in roles:
+                if str(role) == request[1]:
+                    role_to_demote = role
+                    
+            member_to_demote = None
+            for user in members:
+                if str(user) == request[0]:
+                    member_to_demote = user
+            
+            await member_to_demote.remove_roles(role_to_demote)
 
 # promote and demote
 @bot.command()
 async def promote(ctx,*,request):
-    member = ctx.message.author
-    if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
-        request = request.split(', ') 
-        
-        roles = member.guild.roles
-        members = member.guild.members
-        
-        role_to_demote = None
-        for role in roles:
-            if str(role) == request[1]:
-                role_to_demote = role
-                
-        member_to_demote = None
-        for user in members:
-            if str(user) == request[0]:
-                member_to_demote = user
-         
-        await member_to_demote.add_roles(role_to_demote)
+    if bot_is_sleep == False:
+        member = ctx.message.author
+        if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
+            request = request.split(', ') 
+            
+            roles = member.guild.roles
+            members = member.guild.members
+            
+            role_to_demote = None
+            for role in roles:
+                if str(role) == request[1]:
+                    role_to_demote = role
+                    
+            member_to_demote = None
+            for user in members:
+                if str(user) == request[0]:
+                    member_to_demote = user
+            
+            await member_to_demote.add_roles(role_to_demote)
 
 #quote command
 @bot.command()
 async def quote(ctx):
-    with open('user_data.json', 'r') as user_data_file:
-        user_data = json.load(user_data_file)
-        quotes = user_data['quotes']
-        last_quote = quotes["19"]
-        print(last_quote)
-    if datetime.today().hour >= last_quote + 1:
-        last_quote = datetime.today().hour + 1
-        print(last_quote)
-        quote_to_use = randint(1, 18)
-        await ctx.send(quotes[str(quote_to_use)])
-        quotes["19"] = last_quote
-        user_data["quotes"] = quotes
-        with open(user_data_path, 'w') as user_data_file:
-            json.dump(user_data, user_data_file)
-    else:
-        await ctx.send(f"Unfortunatley, my quote reservoir has run dry, come back in a soon. {sad_zeggy}")
+    if bot_is_sleep == False:
+        with open('user_data.json', 'r') as user_data_file:
+            user_data = json.load(user_data_file)
+            quotes = user_data['quotes']
+            last_quote = quotes["19"]
+            print(last_quote)
+        if datetime.today().hour >= last_quote + 1:
+            last_quote = datetime.today().hour + 1
+            print(last_quote)
+            quote_to_use = randint(1, 18)
+            await ctx.send(quotes[str(quote_to_use)])
+            quotes["19"] = last_quote
+            user_data["quotes"] = quotes
+            with open(user_data_path, 'w') as user_data_file:
+                json.dump(user_data, user_data_file)
+        else:
+            await ctx.send(f"Unfortunatley, my quote reservoir has run dry, come back in a soon. {sad_zeggy}")
 
 
 #help command
 @bot.command()
 async def help(ctx):
-    await ctx.send('''alas, it appears that you require aid.
+    if bot_is_sleep == False:
+        await ctx.send('''alas, it appears that you require aid.
 
-    !number_guess..................play a number guessing game to win ping bux
-    !ping bal......................gets your ping bux balance
-    !whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
-    !ping level....................gets your level
-    !trivia........................trivia''')
+        !number_guess..................play a number guessing game to win ping bux
+        !ping bal......................gets your ping bux balance
+        !whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
+        !ping level....................gets your level
+        !trivia........................trivia''')
 
 #displays store items
 @bot.command()
 async def market(ctx,*,request):
-    global product_exists
-    request = request.split(' ')
-    market_function = request[0]
-    product_exists == False
-    with open(user_data_path, 'r') as user_data_file:
-        user_data = json.load(user_data_file)
-        market_products = user_data['market products']
-        money_dict = user_data['money']
-        user_inventories = user_data['user inventories']
-        user_inventory = user_inventories[str(ctx.message.author.id)]
-    user_wallet = money_dict[str(ctx.message.author.id)]
+    if bot_is_sleep == False:
+        global product_exists
+        request = request.split(' ')
+        market_function = request[0]
+        product_exists == False
+        with open(user_data_path, 'r') as user_data_file:
+            user_data = json.load(user_data_file)
+            market_products = user_data['market products']
+            money_dict = user_data['money']
+            user_inventories = user_data['user inventories']
+            user_inventory = user_inventories[str(ctx.message.author.id)]
+        user_wallet = money_dict[str(ctx.message.author.id)]
 
-    if market_function.upper() == "BUY":
-        product_to_buy = request[1]
-        quantity_to_buy = request[2]
-        for product in market_products:
-            if product.upper() == product_to_buy.upper():
-                if request[2] == "1":
-                    product_value = market_products[product[0]]
-                    product_exists = True
-                    cost = int(product_value) * int(quantity_to_buy)
-                    await ctx.send(f'{quantity_to_buy} {product_to_buy} will cost you {cost}, are you sure that you want to purchase this? (Y/N)')
-                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-                    if response.content.upper() == "Y":
-                        if user_wallet >= int(product_value) * int(quantity_to_buy):
-                            await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
-                            money_dict[str(ctx.message.author.id)] -= cost
-                            user_inventory[request[1]] += int(quantity_to_buy)
-                            with open(user_data_path, 'w') as user_data_file:
-                                json.dump(user_data, user_data_file)
+        if market_function.upper() == "BUY":
+            product_to_buy = request[1]
+            quantity_to_buy = request[2]
+            for product in market_products:
+                if product.upper() == product_to_buy.upper():
+                    if request[2] == "1":
+                        product_value = market_products[product[0]]
+                        product_exists = True
+                        cost = int(product_value) * int(quantity_to_buy)
+                        await ctx.send(f'{quantity_to_buy} {product_to_buy} will cost you {cost}, are you sure that you want to purchase this? (Y/N)')
+                        response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                        if response.content.upper() == "Y":
+                            if user_wallet >= int(product_value) * int(quantity_to_buy):
+                                await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
+                                money_dict[str(ctx.message.author.id)] -= cost
+                                user_inventory[request[1]] += int(quantity_to_buy)
+                                with open(user_data_path, 'w') as user_data_file:
+                                    json.dump(user_data, user_data_file)
+                            else:
+                                await ctx.send(f"@Zeggy give me a line here $@# {quantity_to_buy} {request[1].upper()}")
                         else:
-                            await ctx.send(f"@Zeggy give me a line here $@# {quantity_to_buy} {request[1].upper()}")
+                            await ctx.send(f"{sad_zeggy}")
                     else:
-                        await ctx.send(f"{sad_zeggy}")
-                else:
-                    product_value = market_products[product[0]]
-                    product_exists = True
-                    cost = int(product_value) * int(quantity_to_buy)
-                    await ctx.send(f'{quantity_to_buy} {product_to_buy}s will cost you {cost}, are you sure that you want to purchase this? (Y/N)')
-                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-                    if response.content.upper() == "Y":
-                        if user_wallet >= int(product_value) * int(quantity_to_buy):
-                            await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
-                            money_dict[str(ctx.message.author.id)] -= cost
-                            user_inventory[request[1]] += int(quantity_to_buy)
-                            with open(user_data_path, 'w') as user_data_file:
-                                json.dump(user_data, user_data_file)
+                        product_value = market_products[product[0]]
+                        product_exists = True
+                        cost = int(product_value) * int(quantity_to_buy)
+                        await ctx.send(f'{quantity_to_buy} {product_to_buy}s will cost you {cost}, are you sure that you want to purchase this? (Y/N)')
+                        response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                        if response.content.upper() == "Y":
+                            if user_wallet >= int(product_value) * int(quantity_to_buy):
+                                await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
+                                money_dict[str(ctx.message.author.id)] -= cost
+                                user_inventory[request[1]] += int(quantity_to_buy)
+                                with open(user_data_path, 'w') as user_data_file:
+                                    json.dump(user_data, user_data_file)
+                            else:
+                                await ctx.send(f"@Zeggy give me a line here ($# {quantity_to_buy} {request[1].upper()}")
                         else:
-                            await ctx.send(f"@Zeggy give me a line here ($# {quantity_to_buy} {request[1].upper()}")
-                    else:
-                        await ctx.send(f"{sad_zeggy}")
+                            await ctx.send(f"{sad_zeggy}")
 
-        if product_exists == False:
-            await ctx.send("@Zeggy give me a line here *$!")
-    elif market_function.upper() == "SELL":
-        product_to_sell = request[1]
-        quantity_to_sell = request[2]
-        for product in market_products:
-            if product.upper() == product_to_sell.upper():
-                if request[2] == "1":
-                    poggers = market_products[product]
-                    product_value = poggers[1]
-                    product_exists = True
-                    cost = int(product_value) * int(quantity_to_sell)
-                    await ctx.send(f'{quantity_to_sell} {product_to_sell} will make you {cost}, are you sure that you want to sell this? (Y/N)')
-                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-                    if response.content.upper() == "Y":
-                        if user_inventory[request[1]] >= int(quantity_to_sell):
-                            await ctx.send(f"{quantity_to_sell} {request[1]} was removed from your inventory")
-                            money_dict[str(ctx.message.author.id)] += cost
-                            user_inventory[request[1]] -= int(quantity_to_sell)
-                            with open(user_data_path, 'w') as user_data_file:
-                                json.dump(user_data, user_data_file)
+            if product_exists == False:
+                await ctx.send("@Zeggy give me a line here *$!")
+        elif market_function.upper() == "SELL":
+            product_to_sell = request[1]
+            quantity_to_sell = request[2]
+            for product in market_products:
+                if product.upper() == product_to_sell.upper():
+                    if request[2] == "1":
+                        poggers = market_products[product]
+                        product_value = poggers[1]
+                        product_exists = True
+                        cost = int(product_value) * int(quantity_to_sell)
+                        await ctx.send(f'{quantity_to_sell} {product_to_sell} will make you {cost}, are you sure that you want to sell this? (Y/N)')
+                        response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                        if response.content.upper() == "Y":
+                            if user_inventory[request[1]] >= int(quantity_to_sell):
+                                await ctx.send(f"{quantity_to_sell} {request[1]} was removed from your inventory")
+                                money_dict[str(ctx.message.author.id)] += cost
+                                user_inventory[request[1]] -= int(quantity_to_sell)
+                                with open(user_data_path, 'w') as user_data_file:
+                                    json.dump(user_data, user_data_file)
+                            else:
+                                await ctx.send("@Zeggy give me a line here $@#")
                         else:
-                            await ctx.send("@Zeggy give me a line here $@#")
+                            await ctx.send(f"{sad_zeggy}")
                     else:
-                        await ctx.send(f"{sad_zeggy}")
-                else:
-                    poggers = market_products[product]
-                    product_value = poggers[1]
-                    product_exists = True
-                    cost = int(product_value) * int(quantity_to_sell)
-                    await ctx.send(f'{quantity_to_sell} {product_to_sell}s will make you {cost}, are you sure that you want to sell this? (Y/N)')
-                    response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-                    if response.content.upper() == "Y":
-                        if user_inventory[request[1]] >= int(quantity_to_sell):
-                            await ctx.send(f"{quantity_to_sell} {request[1]}s were removed from your inventory")
-                            money_dict[str(ctx.message.author.id)] += cost
-                            user_inventory[request[1]] -= int(quantity_to_sell)
-                            with open(user_data_path, 'w') as user_data_file:
-                                json.dump(user_data, user_data_file)
+                        poggers = market_products[product]
+                        product_value = poggers[1]
+                        product_exists = True
+                        cost = int(product_value) * int(quantity_to_sell)
+                        await ctx.send(f'{quantity_to_sell} {product_to_sell}s will make you {cost}, are you sure that you want to sell this? (Y/N)')
+                        response = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                        if response.content.upper() == "Y":
+                            if user_inventory[request[1]] >= int(quantity_to_sell):
+                                await ctx.send(f"{quantity_to_sell} {request[1]}s were removed from your inventory")
+                                money_dict[str(ctx.message.author.id)] += cost
+                                user_inventory[request[1]] -= int(quantity_to_sell)
+                                with open(user_data_path, 'w') as user_data_file:
+                                    json.dump(user_data, user_data_file)
+                            else:
+                                await ctx.send("@Zeggy give me a line here $@#")
                         else:
-                            await ctx.send("@Zeggy give me a line here $@#")
-                    else:
-                        await ctx.send(f"{sad_zeggy}")
-    else:
-        await ctx.send("@Zeggy give me a line here $&^")
+                            await ctx.send(f"{sad_zeggy}")
+        else:
+            await ctx.send("@Zeggy give me a line here $&^")
     
 @bot.command()
 async def quantity(ctx,*,request):
-    request = request.split(' ')
-    with open(user_data_path, 'r') as user_data_file:
-        user_data = json.load(user_data_file)
-        user_inventories = user_data['user inventories']
-        user_inventory = user_inventories[str(ctx.message.author.id)]
-    for key in user_inventory:
-        if key == request[0]:
-            await ctx.send(f"you have {user_inventory[request[0]]} {request[0]}s")   
+    if bot_is_sleep == False:
+        request = request.split(' ')
+        with open(user_data_path, 'r') as user_data_file:
+            user_data = json.load(user_data_file)
+            user_inventories = user_data['user inventories']
+            user_inventory = user_inventories[str(ctx.message.author.id)]
+        for key in user_inventory:
+            if key == request[0]:
+                await ctx.send(f"you have {user_inventory[request[0]]} {request[0]}s")   
 
 @bot.command()
 async def give_money(ctx,*,request):
-    request = request.split(' ')
-    if ctx.message.author.id in [239150965217820672, 351707203981541378]:
-        await change_ping_bucks(ctx.message.author.id, int(request[0]), ctx.message.channel, True)
+    if bot_is_sleep == False:
+        request = request.split(' ')
+        if ctx.message.author.id in [239150965217820672, 351707203981541378]:
+            await change_ping_bucks(ctx.message.author.id, int(request[0]), ctx.message.channel, True)
 
 #number guessing
 @bot.command()
 async def number_guess(ctx):
-    
-    #variable declarations including random number
-    play_again = ''
-    guesses = 7
-    number = randint(1, 100)
-    
-    #while loop to play the game
-    while True:
+    if bot_is_sleep == False:    
+        #variable declarations including random number
+        play_again = ''
+        guesses = 7
+        number = randint(1, 100)
         
-        #asks the user to guess a number then checks if the next message is from the caller of  the command
-        await ctx.send("Guess a number")
-        guess = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-        
-        #checks if the user has no  guesses left
-        if guesses < 0:
+        #while loop to play the game
+        while True:
             
-            #says that the user is a stupid idiot because this game is extremely easy to win
-            await ctx.send(f"Idiot dumb LOSER dumb idiot pogpega not epic gaming not kekaga the number was {number} dumb idiot man")
-            await ctx.send("You really shouldn't have lost considering how easy it is to win")
-            await ctx.send("Are you really that dumb and that much of a LOSER that you lost at a game popular among 3rd graders?")
-            await ctx.send("Play Again? [Y/n]")
-            #asks if the user wants to play again then declares a new number variable if they do want to
-            play_again = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+            #asks the user to guess a number then checks if the next message is from the caller of  the command
+            await ctx.send("Guess a number")
+            guess = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
             
-            if play_again.content.upper() == "Y":
-                number = randint(1, 100)
-                guesses = 7 
-                continue
-            
-            else:
-                break
-            
-            
-        # checks if the user has won 
-        elif int(guess.content) == number:
-            
-            # asks the user if they want to play again     
-            await ctx.send("You won, play again [Y/n]")
-            await change_ping_bucks(ctx.message.author.id, 10, ctx.message.channel, True)
-            play_again = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-            if play_again.content.upper() == "Y":
-                number = randint(1, 100)
-                guesses = 7
-                continue
-            else:
-                break
+            #checks if the user has no  guesses left
+            if guesses < 0:
                 
-        elif int(guess.content) < number:
-            guesses -= 1
-            await ctx.send("You guessed lower than the epic number")
-            continue
-        else:
-            guesses -= 1 
-            await ctx.send("You guessed Higher than the epic number")
-            continue
+                #says that the user is a stupid idiot because this game is extremely easy to win
+                await ctx.send(f"Idiot dumb LOSER dumb idiot pogpega not epic gaming not kekaga the number was {number} dumb idiot man")
+                await ctx.send("You really shouldn't have lost considering how easy it is to win")
+                await ctx.send("Are you really that dumb and that much of a LOSER that you lost at a game popular among 3rd graders?")
+                await ctx.send("Play Again? [Y/n]")
+                #asks if the user wants to play again then declares a new number variable if they do want to
+                play_again = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                
+                if play_again.content.upper() == "Y":
+                    number = randint(1, 100)
+                    guesses = 7 
+                    continue
+                
+                else:
+                    break
+                
+                
+            # checks if the user has won 
+            elif int(guess.content) == number:
+                
+                # asks the user if they want to play again     
+                await ctx.send("You won, play again [Y/n]")
+                await change_ping_bucks(ctx.message.author.id, 10, ctx.message.channel, True)
+                play_again = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+                if play_again.content.upper() == "Y":
+                    number = randint(1, 100)
+                    guesses = 7
+                    continue
+                else:
+                    break
+                    
+            elif int(guess.content) < number:
+                guesses -= 1
+                await ctx.send("You guessed lower than the epic number")
+                continue
+            else:
+                guesses -= 1 
+                await ctx.send("You guessed Higher than the epic number")
+                continue
 
 #ping command (do we really need this?)
 @bot.command()
 async def xi_jinping(ctx):
-    
-    #Pings the bot
-    await ctx.send(f"Pong {round(bot.latency * 1000)}ms")
+    if bot_is_sleep == False:    
+        #Pings the bot
+        await ctx.send(f"Pong {round(bot.latency * 1000)}ms")
 
 #put this is dev commands
 @bot.command()
 async def view_json(ctx):
-    with open('user_data.json') as user_data_file:
-        user_data = json.load(user_data_file)
-        print(json.dumps(user_data, indent=4, sort_keys=True))
+    if bot_is_sleep == False:
+        with open('user_data.json') as user_data_file:
+            user_data = json.load(user_data_file)
+            print(json.dumps(user_data, indent=4, sort_keys=True))
     
 #gets users currnet balance
 @bot.command()
 async def ping_bal(ctx):
-    with open(user_data_path, 'r') as user_data_file:
-        await ctx.send(f"you have {json.load(user_data_file)['money'][str(ctx.message.author.id)]} ping bucks in your ping bank account")
+    if bot_is_sleep == False:
+        with open(user_data_path, 'r') as user_data_file:
+            await ctx.send(f"you have {json.load(user_data_file)['money'][str(ctx.message.author.id)]} ping bucks in your ping bank account")
 
 #trivia
 @bot.command(pass_context = True, aliases=['triv', 'triva'])
 async def trivia(ctx):
+    if bot_is_sleep == False:
+        author = ctx.message.author.id
 
-    author = ctx.message.author.id
+        # variable to get out of the while loop
+        playing = True
 
-    # variable to get out of the while loop
-    playing = True
+        categories = {"general knowledge": Category.GENERAL_KNOWLEDGE, 'video games': Category.ENTERTAINMENT_VIDEO_GAMES, 'computers': Category.SCIENCE_COMPUTERS, \
+            'mythology': Category.MYTHOLOGY, 'geography': Category.GEOGRAPHY, "history": Category.HISTORY, 'anime': Category.ENTERTAINMENT_JAPANESE_ANIME_MANGA, 'all': None}
 
-    categories = {"general knowledge": Category.GENERAL_KNOWLEDGE, 'video games': Category.ENTERTAINMENT_VIDEO_GAMES, 'computers': Category.SCIENCE_COMPUTERS, \
-        'mythology': Category.MYTHOLOGY, 'geography': Category.GEOGRAPHY, "history": Category.HISTORY, 'anime': Category.ENTERTAINMENT_JAPANESE_ANIME_MANGA, 'all': None}
+        difficulties = {'hard': Difficulty.HARD, 'medium': Difficulty.MEDIUM, 'easy': Difficulty.EASY}
+        while playing:
+            try:
+                await ctx.send(f"Which One: **{', '.join([key.title() if key.title() != 'All' else '**or** All' for key in categories])}**?")
+                user_category_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+                user_category = categories[user_category_response.content.lower()]
 
-    difficulties = {'hard': Difficulty.HARD, 'medium': Difficulty.MEDIUM, 'easy': Difficulty.EASY}
-    while playing:
-        try:
-            await ctx.send(f"Which One: **{', '.join([key.title() if key.title() != 'All' else '**or** All' for key in categories])}**?")
-            user_category_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
-            user_category = categories[user_category_response.content.lower()]
-
-            await ctx.send('what difficulty shall you choose?')
-            user_difficulty_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
-            user_difficulty =  difficulties[user_difficulty_response.content.lower()]
-            questions = client.get_questions(amount=20, category=user_category, difficulty=user_difficulty)
-            amount_to_win = 0
-            if user_difficulty == Difficulty.EASY:
-                amount_to_win = 10
-            elif user_difficulty == Difficulty.MEDIUM:
-                amount_to_win = 20
-            else:
-                amount_to_win = 40
-            
-        except:
-            await ctx.send("THAT IS NOT A VALID RESPONSE YOU DIMWITTED DONKEY, TRY AGAIN ONCE AGAIN YOU NUMSKULL OAF!!11111@2!2!32!$!q111$41!!!!!!")
-            continue
-
-        for question in questions:
-            await ctx.send(f"**{question.question}**:")
-            options = ''
-            for i in range(len(question.choices)):
-                options += f'{i + 1}. {question.choices[i]}\n'
-            await ctx.send(options)
-            user_answer = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
-            user_answer = user_answer.content
-            if user_answer.upper() == question.answer.upper() or int(user_answer) - 1 == question.answer_index:
-                await ctx.send("WOW you just got the question correct, who could have known")
-                await change_ping_bucks(author, amount_to_win, ctx.message.channel, True)
-            else:
-                await ctx.send(f"YOU FEEBLEMINDED IMBECILE, THE CORRECT ANSWER WAS **{question.answer.upper()}**, FOR THIS TREMENDOUS BLUNDER YOU SHALL PAY")
+                await ctx.send('what difficulty shall you choose?')
+                user_difficulty_response = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+                user_difficulty =  difficulties[user_difficulty_response.content.lower()]
+                questions = client.get_questions(amount=20, category=user_category, difficulty=user_difficulty)
+                amount_to_win = 0
+                if user_difficulty == Difficulty.EASY:
+                    amount_to_win = 10
+                elif user_difficulty == Difficulty.MEDIUM:
+                    amount_to_win = 20
+                else:
+                    amount_to_win = 40
                 
-            
-            await ctx.send("Would you like to try you hand once again, perhaps with a different category? [Y/D/N]")
-            play_again = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
-            play_again_content = play_again.content.upper()
-            if play_again_content == 'Y':
+            except:
+                await ctx.send("THAT IS NOT A VALID RESPONSE YOU DIMWITTED DONKEY, TRY AGAIN ONCE AGAIN YOU NUMSKULL OAF!!11111@2!2!32!$!q111$41!!!!!!")
                 continue
-            
-            elif play_again_content == 'D':
-                break
-            
-            else:
-                await ctx.send(f"YOU HAVE FORSAKEN ME {sad_zeggy}")
-                playing = False
-                break
-        if play_again_content != 'N':    
-            await ctx.send("Alas, my great question river has run dry, ask me once more")
+
+            for question in questions:
+                await ctx.send(f"**{question.question}**:")
+                options = ''
+                for i in range(len(question.choices)):
+                    options += f'{i + 1}. {question.choices[i]}\n'
+                await ctx.send(options)
+                user_answer = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+                user_answer = user_answer.content
+                if user_answer.upper() == question.answer.upper() or int(user_answer) - 1 == question.answer_index:
+                    await ctx.send("WOW you just got the question correct, who could have known")
+                    await change_ping_bucks(author, amount_to_win, ctx.message.channel, True)
+                else:
+                    await ctx.send(f"YOU FEEBLEMINDED IMBECILE, THE CORRECT ANSWER WAS **{question.answer.upper()}**, FOR THIS TREMENDOUS BLUNDER YOU SHALL PAY")
+                    
+                
+                await ctx.send("Would you like to try you hand once again, perhaps with a different category? [Y/D/N]")
+                play_again = await  bot.wait_for('message', timeout=60, check = lambda message: message.author == ctx.message.author)
+                play_again_content = play_again.content.upper()
+                if play_again_content == 'Y':
+                    continue
+                
+                elif play_again_content == 'D':
+                    break
+                
+                else:
+                    await ctx.send(f"YOU HAVE FORSAKEN ME {sad_zeggy}")
+                    playing = False
+                    break
+            if play_again_content != 'N':    
+                await ctx.send("Alas, my great question river has run dry, ask me once more")
 
 #whos that pokemon game
 @bot.command(pass_context = True, aliases=['who_pokemon', 'whothatpokemon', 'whopokemon', 'guess_pokemon', 'guesspokemon'])
 async def whos_that_pokemon(ctx):
-    images = 'images'
-    client = pokepy.V2Client()
-    check_function = lambda x: x.author == ctx.message.author
-    errors = 0
-    while True:
-        
-        if errors >= 5:
-            await ctx.send("I probably got ratelimited because you were playing to hard, try again in atleast 30 mintes")
-            break
-
-        background = Image.open(f'{images}/background.png')
-        pokemon_number = choice(['{:03d}'.format(i) for i in range(1,807)])
-        
-        pokemon_number_lookup = pokemon_number.lstrip('0')
-        pokemon = Image.open(f"{images}/{pokemon_number}.png")
-        pokemon_hidden = Image.open(f"{images}/{pokemon_number}.png")
-        pixels = pokemon_hidden.load()
-        
-        for i in range(pokemon_hidden.size[0]):    
-            for j in range(pokemon_hidden.size[1]):    
-                
-                if pixels[i,j][3] != 0:
-                    pixels[i,j] = (0, 0, 0) 
-                
-                
-        background.paste(pokemon_hidden, (50,50,265,265), pokemon_hidden)
-        await send_image(background, ctx.message.channel)
-        
-        try:
-            pokemon_name = client.get_pokemon_species(pokemon_number_lookup).name
-            
-        except:
-            await ctx.send("I am deeply apologetic as I have made a great blunder, I will try to do better next time, if there even is a next time")
-            errors += 1
-            continue
-
+    if bot_is_sleep == False:
+        images = 'images'
+        client = pokepy.V2Client()
+        check_function = lambda x: x.author == ctx.message.author
         errors = 0
-        await ctx.send('WHOS THAT POKEMON!!!1!!!111!@!')
-
-        try:    
-            user_response = await bot.wait_for('message', timeout=60, check=check_function)
-
-        except:           
-            await ctx.send(f"I've been waiting here for an eternity how dare you abandon me you callous fool, YOU WILL PAY {sad_zeggy}")
-
-        s = SequenceMatcher(None, user_response.content.upper(), pokemon_name.upper())
-        percent_correct = s.ratio()
-        print(f'{ctx.message.author} user answer: {user_response.content}')
-        print(f'{ctx.message.author} correct answer: {pokemon_name}')
-        print(f'{ctx.message.author} percent: {percent_correct}')
-        background.paste(pokemon, (50,50,265,265), pokemon)
-
-        if percent_correct > 0.7:
-            await ctx.send(f"You got it correct, the pokemon was {pokemon_name.title()}")
-            await change_ping_bucks(ctx.message.author.id, 50, ctx.message.channel, True)
-
-        else:
-            await ctx.send(f'You got it wrong you loser, the pokemon was obviously {pokemon_name.title()}')
-        
-        await send_image(background, ctx.message.channel)
-        await ctx.send("Do you want to play again [Y/n]")
-
-        try:
-            play_again = await bot.wait_for('message', timeout=20, check=check_function)
+        while True:
             
-        except:
-            await ctx.send("Bye Bye")
-            break
-        play_again = play_again.content.upper()
-        
-        if play_again == 'Y' or play_again == "YES":
-            continue
+            if errors >= 5:
+                await ctx.send("I probably got ratelimited because you were playing to hard, try again in atleast 30 mintes")
+                break
 
-        else:
-            await ctx.send(f"im devistated {sad_zeggy}")
-            break
+            background = Image.open(f'{images}/background.png')
+            pokemon_number = choice(['{:03d}'.format(i) for i in range(1,807)])
+            
+            pokemon_number_lookup = pokemon_number.lstrip('0')
+            pokemon = Image.open(f"{images}/{pokemon_number}.png")
+            pokemon_hidden = Image.open(f"{images}/{pokemon_number}.png")
+            pixels = pokemon_hidden.load()
+            
+            for i in range(pokemon_hidden.size[0]):    
+                for j in range(pokemon_hidden.size[1]):    
+                    
+                    if pixels[i,j][3] != 0:
+                        pixels[i,j] = (0, 0, 0) 
+                    
+                    
+            background.paste(pokemon_hidden, (50,50,265,265), pokemon_hidden)
+            await send_image(background, ctx.message.channel)
+            
+            try:
+                pokemon_name = client.get_pokemon_species(pokemon_number_lookup).name
+                
+            except:
+                await ctx.send("I am deeply apologetic as I have made a great blunder, I will try to do better next time, if there even is a next time")
+                errors += 1
+                continue
+
+            errors = 0
+            await ctx.send('WHOS THAT POKEMON!!!1!!!111!@!')
+
+            try:    
+                user_response = await bot.wait_for('message', timeout=60, check=check_function)
+
+            except:           
+                await ctx.send(f"I've been waiting here for an eternity how dare you abandon me you callous fool, YOU WILL PAY {sad_zeggy}")
+
+            s = SequenceMatcher(None, user_response.content.upper(), pokemon_name.upper())
+            percent_correct = s.ratio()
+            print(f'{ctx.message.author} user answer: {user_response.content}')
+            print(f'{ctx.message.author} correct answer: {pokemon_name}')
+            print(f'{ctx.message.author} percent: {percent_correct}')
+            background.paste(pokemon, (50,50,265,265), pokemon)
+
+            if percent_correct > 0.7:
+                await ctx.send(f"You got it correct, the pokemon was {pokemon_name.title()}")
+                await change_ping_bucks(ctx.message.author.id, 50, ctx.message.channel, True)
+
+            else:
+                await ctx.send(f'You got it wrong you loser, the pokemon was obviously {pokemon_name.title()}')
+            
+            await send_image(background, ctx.message.channel)
+            await ctx.send("Do you want to play again [Y/n]")
+
+            try:
+                play_again = await bot.wait_for('message', timeout=20, check=check_function)
+                
+            except:
+                await ctx.send("Bye Bye")
+                break
+            play_again = play_again.content.upper()
+            
+            if play_again == 'Y' or play_again == "YES":
+                continue
+
+            else:
+                await ctx.send(f"im devistated {sad_zeggy}")
+                break
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #SOUNDS
 
 @bot.command()
 async def soundboard(ctx):
-    global music_channel
-    await ctx.message.author.voice.channel.connect()
-    voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
-    message = await music_channel.send('''react to play sounds''')
-    await message.add_reaction("💣")
-    await message.add_reaction("❌")
+    if bot_is_sleep == False:
+        global music_channel
+        await ctx.message.author.voice.channel.connect()
+        voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+        message = await music_channel.send('''react to play sounds''')
+        await message.add_reaction("💣")
+        await message.add_reaction("❌")
 
 # @bot.command()
 # async def soundboard_ninja(ctx):
@@ -835,46 +864,49 @@ async def soundboard(ctx):
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    global guild
-    channel = reaction.message.channel
-    if channel.id == 753352535187914863:
-        if user.id != 701139756330778745:
-            if reaction.message.content == "react to play sounds":
-                if reaction.emoji == "💣":
-                    voice = discord.utils.get(bot.voice_clients, guild=guild)
-                    voice.play(discord.FFmpegPCMAudio('sounds\Boom.mp3'))
-                    voice.volume = 100
-                if reaction.emoji == "❌":
-                    voice = discord.utils.get(bot.voice_clients, guild=guild)
-                    await voice.disconnect()
+    if bot_is_sleep == False:
+        global guild
+        channel = reaction.message.channel
+        if channel.id == 753352535187914863:
+            if user.id != 701139756330778745:
+                if reaction.message.content == "react to play sounds":
+                    if reaction.emoji == "💣":
+                        voice = discord.utils.get(bot.voice_clients, guild=guild)
+                        voice.play(discord.FFmpegPCMAudio('sounds\Boom.mp3'))
+                        voice.volume = 100
+                    if reaction.emoji == "❌":
+                        voice = discord.utils.get(bot.voice_clients, guild=guild)
+                        await voice.disconnect()
 
 @bot.command()
 async def play(ctx, url):
-    print("joining")
-    if not ctx.message.author.voice:
-        await ctx.send("YOU BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
-        return
-    
-    else:
-        channel = ctx.message.author.voice.channel
+    if bot_is_sleep == False:
+        print("joining")
+        if not ctx.message.author.voice:
+            await ctx.send("YOU BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
+            return
+        
+        else:
+            channel = ctx.message.author.voice.channel
 
-    await channel.connect()
+        await channel.connect()
 
-    server = ctx.message.guild
-    voice_channel = server.voice_client
-    
-    voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
-    player = await YTDLSource.from_url(url, loop=bot.loop)
-    voice_channel.play(player, after=lambda e: print('stupid dumb idiot thing happen: %s' % e) if e else None)
+        server = ctx.message.guild
+        voice_channel = server.voice_client
+        
+        voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+        player = await YTDLSource.from_url(url, loop=bot.loop)
+        voice_channel.play(player, after=lambda e: print('stupid dumb idiot thing happen: %s' % e) if e else None)
 
-    await ctx.send('playing {}'.format(player.title))
+        await ctx.send('playing {}'.format(player.title))
 
 @bot.command()
 async def leave(ctx):
-    print("leaving")
-    voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
-    await voice.disconnect()
-    print("left")
+    if bot_is_sleep == False:
+        print("leaving")
+        voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
+        await voice.disconnect()
+        print("left")
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
@@ -882,46 +914,47 @@ async def leave(ctx):
 # lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(seconds=10)
 async def manage_offences():
-    global muterole
-    global gaming_cam_rol
-    # perms = discord.Permissions(manage_channels=True, manage_roles=True)
-    # await guild.create_role(name='poggerss', permissions=perms)
-    # channel_role = discord.utils.get(guild.roles, name='poggerss')
-    for member in guild.members:
-        if member.id == 239150965217820672:
-            await member.add_roles(gaming_cam_rol)
+    if bot_is_sleep == False:
+        global muterole
+        global gaming_cam_rol
+        # perms = discord.Permissions(manage_channels=True, manage_roles=True)
+        # await guild.create_role(name='poggerss', permissions=perms)
+        # channel_role = discord.utils.get(guild.roles, name='poggerss')
+        for member in guild.members:
+            if member.id == 239150965217820672:
+                await member.add_roles(gaming_cam_rol)
 
-    # loads the data
-    with open(user_data_path, 'r') as user_data_file:
-        user_data = json.load(user_data_file)
-        offences = user_data['offences']
-        
-    # loops through members
-    for member_id in offences:
-        member_value = offences[member_id]
-
-        # removes one offence every 12 hours and 12 PM and AM 
-        if datetime.today().hour % 12 == 0 and member_value[0] > 0:
-            member_value[0] -= 1 
-
-        else:
-            member_value[0] = 0
-        # checks if it is time to unmute someone    
-        if (time() - member_value[1]) > 0 and member_value[1] != 0:
-
-            #gets the member from their id
-            member_to_unmute = discord.utils.get(guild.members, id=int(member_id))
+        # loads the data
+        with open(user_data_path, 'r') as user_data_file:
+            user_data = json.load(user_data_file)
+            offences = user_data['offences']
             
-            # removes the mute role
-            await member_to_unmute.remove_roles(muterole)
+        # loops through members
+        for member_id in offences:
+            member_value = offences[member_id]
 
-            # resets their unmute time
-            member_value[1] = 0
-            print(f'Unmuted {member_to_unmute.name}')
+            # removes one offence every 12 hours and 12 PM and AM 
+            if datetime.today().hour % 12 == 0 and member_value[0] > 0:
+                member_value[0] -= 1 
 
-    # changes the json
-    with open(user_data_path, 'w') as user_data_file:
-        json.dump(user_data, user_data_file)
+            else:
+                member_value[0] = 0
+            # checks if it is time to unmute someone    
+            if (time() - member_value[1]) > 0 and member_value[1] != 0:
+
+                #gets the member from their id
+                member_to_unmute = discord.utils.get(guild.members, id=int(member_id))
+                
+                # removes the mute role
+                await member_to_unmute.remove_roles(muterole)
+
+                # resets their unmute time
+                member_value[1] = 0
+                print(f'Unmuted {member_to_unmute.name}')
+
+        # changes the json
+        with open(user_data_path, 'w') as user_data_file:
+            json.dump(user_data, user_data_file)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #getting the key and starting the bot
