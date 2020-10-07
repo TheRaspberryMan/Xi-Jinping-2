@@ -983,51 +983,51 @@ async def manage_offences():
         with open(user_data_path, 'w') as user_data_file:
             json.dump(user_data, user_data_file)
 
-        #await test()
+@tasks.loop(hours=12)
+async def manage_roles():
+    permissions_channel = discord.utils.get(guild.channels, id=741711058044977285)
+    print(has_perms)
+    async for message in permissions_channel.history(limit=100):
+        
+        
+        # makes it so exeptions can be passed
+        if perm_votes[message.content] == None:
+            continue
+        
+        elif  isinstance(perm_votes[message.content], int):
+            perms = discord.Permissions()
+            
+            thumbs_up = 0
+            thumbs_down = 0
+            for reaction in message.reactions:
+                if reaction.emoji == '👎':
+                    thumbs_down = reaction.count
+                elif reaction.emoji == '👍':
+                    thumbs_up = reaction.count
 
-        permissions_channel = discord.utils.get(guild.channels, id=741711058044977285)
-        print(has_perms)
-        async for message in permissions_channel.history(limit=100):
-            
-            
-            # makes it so exeptions can be passed
-            if perm_votes[message.content] == None:
-                continue
-            
-            elif  isinstance(perm_votes[message.content], int):
-                perms = discord.Permissions()
-                
-                thumbs_up = 0
-                thumbs_down = 0
-                for reaction in message.reactions:
-                    if reaction.emoji == '👎':
-                        thumbs_down = reaction.count
-                    elif reaction.emoji == '👍':
-                        thumbs_up = reaction.count
+            role = discord.utils.get(guild.roles, id = perm_votes[message.content])
+            counts = [number.count for number in message.reactions]
+            if (thumbs_up >= thumbs_down or any(number >= len(guild.members) for number in counts)) and not has_perms[message.content]:
+                has_perms[message.content] = True 
+                perms.update(mute_members = True, move_members = True) 
+                try:
+                    await role.edit(permissions = perms, colour = discord.Color.dark_orange())
+                    print(3)
+                    sleep(10)
+                except Exception as e:
+                    print(e)
+                    
 
-                role = discord.utils.get(guild.roles, id = perm_votes[message.content])
-                counts = [number.count for number in message.reactions]
-                if (thumbs_up >= thumbs_down or any(number >= len(guild.members) for number in counts)) and not has_perms[message.content]:
-                    has_perms[message.content] = True 
-                    perms.update(mute_members = True, move_members = True) 
+            else:
+                if has_perms[message.content]:
+                    has_perms[message.content] = False
+                    perms.update(mute_members = False, move_members = False)
                     try:
                         await role.edit(permissions = perms, colour = discord.Color.dark_orange())
                         print(3)
                         sleep(10)
                     except Exception as e:
                         print(e)
-                        
-
-                else:
-                    if has_perms[message.content]:
-                        has_perms[message.content] = False
-                        perms.update(mute_members = False, move_members = False)
-                        try:
-                            await role.edit(permissions = perms, colour = discord.Color.dark_orange())
-                            print(3)
-                            sleep(10)
-                        except Exception as e:
-                            print(e) 
 
 @tasks.loop(hours=12)
 async def change_colors():
