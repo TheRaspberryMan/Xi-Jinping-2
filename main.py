@@ -1052,4 +1052,4 @@ TOKEN = f.readline()
 TEST_TOKEN = f.readline()
 f.close()
 
-bot.run(str(TEST_TOKEN))
+bot.run(str(TOKEN))
