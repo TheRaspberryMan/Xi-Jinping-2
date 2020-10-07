@@ -939,7 +939,7 @@ async def leave(ctx):
 #LOOP
 
 # lowers offences and unmutes people (checks every 30 seconds)           
-@tasks.loop(minutes=30)
+@tasks.loop(seconds=30)
 async def manage_offences():
     if bot_is_sleep == False:
         global muterole
