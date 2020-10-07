@@ -420,7 +420,6 @@ async def on_message(message):
 #     await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
 #     #add json to store votes and what people voted, also add a voting commadd
 
-<<<<<<< HEAD
 #toggles bot sleep
 @bot.command()
 async def sleep(ctx):
@@ -437,10 +436,6 @@ async def wake(ctx):
         print('waking bot')
         bot_is_sleep = False
         await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('sex with stalin'))
-=======
-
-        
->>>>>>> b0827f2f7278e6ae50a5baf9c4c1370f53be4cdc
 
 # promote and demote
 @bot.command()
@@ -946,28 +941,6 @@ async def leave(ctx):
 # lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(minutes=30)
 async def manage_offences():
-<<<<<<< HEAD
-    if bot_is_sleep == False:
-        global muterole
-        global gaming_cam_rol
-        # perms = discord.Permissions(manage_channels=True, manage_roles=True)
-        # await guild.create_role(name='poggerss', permissions=perms)
-        # channel_role = discord.utils.get(guild.roles, name='poggerss')
-        for member in guild.members:
-            if member.id == 239150965217820672:
-                await member.add_roles(gaming_cam_rol)
-
-        # loads the data
-        with open(user_data_path, 'r') as user_data_file:
-            user_data = json.load(user_data_file)
-            offences = user_data['offences']
-            
-        # loops through members
-        for member_id in offences:
-            member_value = offences[member_id]
-=======
-    print(1)
-    
     global muterole
     global gaming_cam_rol
     # perms = discord.Permissions(manage_channels=True, manage_roles=True)
@@ -985,7 +958,6 @@ async def manage_offences():
     # loops through members
     for member_id in offences:
         member_value = offences[member_id]
->>>>>>> b0827f2f7278e6ae50a5baf9c4c1370f53be4cdc
 
             # removes one offence every 12 hours and 12 PM and AM 
             if datetime.today().hour % 12 == 0 and member_value[0] > 0:
