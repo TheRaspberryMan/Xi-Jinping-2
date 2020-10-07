@@ -1037,6 +1037,7 @@ async def change_colors():
         
             if role.name.upper() != "ZEGGY, KING OF KINGS":
                 await role.edit(colour = discord.Colour.from_rgb(randint(0,256) ,randint(0,256) ,randint(0,256))) 
+                sleep(10)
 
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
