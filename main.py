@@ -299,6 +299,7 @@ async def on_ready():
 #event command for xp and muting
 @bot.event
 async def on_message(message):
+    
     if bot_is_sleep == False:
         # variables for later use
         global last_author
@@ -933,8 +934,23 @@ async def leave(ctx):
         await voice.disconnect()
         print("left")
 
-
+@bot.command()
+async def max_color(ctx):
+    if ctx.message.author.id == 444258961332502548 or ctx.message.author.id == 351707203981541378:
+        await ctx.send("WHO SHALL YOUR TORTURE TODAY MASTER (CLUE: YOU HAVE TO @ THEM, JUST TO BE CLEAR, YOU HAVE TO @ THEM, I KNOW YOU HAVE TROUBLE WITH THESE THINGS SOMETIMES!!!!!!!!!!!@#$@#!@#@!@")
+        person = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+        person_id = person.content[3:-1]   
+        print(person_id) 
+       
+        person_object = guild.get_member(int(person_id))
+        await ctx.send("I AWAIT YOUR NEXT COMMAND (CLUE NUMBER 2: OOOOOOOH I AM THE GHOST OF XI JINPING AND I AM HERE TO TELL YOU HOW TO USE THIS COMMAND. FIRST RED THEN COMMA THEN GREEN THEN COMMA THEN BLUE THEN COMMA) (CLUE NUMBER 3: YOU WILL FIGURE IT OUT IF YOU TRY HARD ENOUGH, YOU JUST HAVE TO TRY HARDER THAN YOU HAVE EVER TRIED BEFORE, I AM AWARE OF YOU COGNITIVE FUNCTION, BUT YOU HAVE TO JUST TRY A LITTLE BIT MORE THAN YOU DID BEFORE) (HINT NUMBER 5: THAT WAS A RIDDLE, DID YOU FIGURE IT OUT, I HOPE YOU FIGURED OUT BECAUSE I PUT A LOT OF WORK INTO THAT RIDDLE, JUST SO A BONEHEADED SIMPSON LIKE YOU COULD UNDER STAND! IT;")
+        color = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+        color = [int(color_1.strip()) for color_1 in color.content.split(',')]
         
+        person_roles = list(person_object.roles)
+        await person_roles[-1].edit(colour=discord.Colour.from_rgb(color[0], color[1], color[2]))
+    else:
+        await ctx.send(f"YOU'RE NOT COOL ENOUGH TO GET PAST ME {cool_zeggy}\n BULLYS LIKE YOU END UP LIKE HIM {thwomp_zeggy}")
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
 
@@ -1053,4 +1069,4 @@ TOKEN = f.readline()
 TEST_TOKEN = f.readline()
 f.close()
 
-bot.run(str(TOKEN))
+bot.run(str(TEST_TOKEN))
