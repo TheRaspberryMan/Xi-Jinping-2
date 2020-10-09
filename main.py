@@ -511,12 +511,13 @@ async def quote(ctx):
 async def help(ctx):
     if bot_is_sleep == False:
         await ctx.send('''alas, it appears that you require aid.
-
-        !number_guess..................play a number guessing game to win ping bux
-        !ping bal......................gets your ping bux balance
-        !whos_that_pokemon.............play a game of whos that pokemon to earn ping bux
-        !ping level....................gets your level
-        !trivia........................trivia''')
+        !number_guess........................play a number guessing game to win ping bux
+        !ping bux............................gets your ping bux balance
+        !whos_that_pokemon...................play a game of whos that pokemon to earn ping bux
+        !ping level..........................gets your level
+        !trivia..............................trivia
+        !market <buy/sell> <item> <quantity>.purchase or sell an item (quantity required)
+        !quantity <item>.....................tells you the quantity of a certain item in your inventory''')
 
 #displays store items
 @bot.command()
@@ -870,6 +871,7 @@ async def whos_that_pokemon(ctx):
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #SOUNDS
 
+#default soundboard
 @bot.command()
 async def soundboard(ctx):
     if bot_is_sleep == False:
@@ -889,6 +891,7 @@ async def soundboard(ctx):
 #     await message.add_reaction("💣")
 #     await message.add_reaction("❌")
 
+#actual soundboard functionality 
 @bot.event
 async def on_reaction_add(reaction, user):
     if bot_is_sleep == False:
@@ -1070,4 +1073,4 @@ TOKEN = f.readline()
 TEST_TOKEN = f.readline()
 f.close()
 
-bot.run(str(TEST_TOKEN))
+bot.run(str(TOKEN))
