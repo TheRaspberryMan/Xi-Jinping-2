@@ -1061,9 +1061,7 @@ async def change_colors():
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 #getting the key and starting the bot
-
 
 #if it doesnt work remember to cd into the right place cam you absolute idot
 f = open("token.txt", "r") # get key
