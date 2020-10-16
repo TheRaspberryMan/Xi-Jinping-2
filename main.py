@@ -170,6 +170,7 @@ async def send_image(image, channel):
 #assigns roles upon joining and greets member
 @bot.event
 async def on_member_join(member):
+    user_count = 0
     holy_role = discord.utils.get(member.guild.roles, id=739594604168347789)
 
     # loads data
@@ -198,8 +199,9 @@ async def on_member_join(member):
     # changes the data
     with open(user_data_path, 'w') as user_roles_file:
         json.dump(user_data, user_roles_file)
-
-    await joins_and_leaves_channel.send(f"OH BLESSED DAY {member.name.upper()} HAS JOINED OUR MIGHTY EMPIRE") 
+    for users in guild.members:
+        user_count += 1
+    await joins_and_leaves_channel.send(f"OH BLESSED DAY {member.name.upper()} HAS JOINED OUR MIGHTY EMPIRE, WE NOW HAVE {user_count} MEMBERS OF OUR EMPIRE!!@!!#@$4") 
 
 #records roles upon leaving and informs all other users of the travesty
 @bot.event    
