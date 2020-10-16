@@ -51,7 +51,8 @@ perm_votes = {
     "NATE" : [True, 560506450829639691], 
     "**SQUIRMYWORMY8**" : None,
     'walen' : [True, 552287282124685323],
-    "JACBOBY" : [True, 289159053857259521]
+    "JACBOBY" : [True, 289159053857259521],
+    "SHAUN" : [True, 363746475349377025]
 }
 
 has_perms = {key : False for key in perm_votes}
