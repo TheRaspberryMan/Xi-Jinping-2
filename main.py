@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import json
 import pokepy
 import requests
@@ -295,6 +296,7 @@ async def on_ready():
     #     await member.edit(deafen=False)
 
     manage_offences.start()
+    json_interface.start()
 
     print("I'm ready to ping some pongs\n")
 
@@ -962,9 +964,11 @@ async def max_color(ctx):
 # lowers offences and unmutes people (checks every 30 seconds)           
 @tasks.loop(seconds=30)
 async def manage_offences():
+    global bot_is_sleep
     if bot_is_sleep == False:
         global muterole
         global gaming_cam_rol
+
         # perms = discord.Permissions(manage_channels=True, manage_roles=True)
         # await guild.create_role(name='poggerss', permissions=perms)
         # channel_role = discord.utils.get(guild.roles, name='poggerss')
@@ -1060,6 +1064,25 @@ async def change_colors():
                 await role.edit(colour = discord.Colour.from_rgb(randint(0,256) ,randint(0,256) ,randint(0,256))) 
                 sleep(10)
 
+@tasks.loop(seconds=1)
+async def json_interface():
+    global bot_is_sleep
+    with open("test.json", 'r') as data_file:
+        data = json.load(data_file)
+        datadict = data["data"]
+        bot_is_sleep_data = datadict['bot_is_sleep']
+        death_data = datadict['turn_off']
+        if bot_is_sleep_data == "0":
+            if bot_is_sleep == True:
+                bot_is_sleep = False
+                print('waking bot')
+        if bot_is_sleep_data == "1":
+            if bot_is_sleep == False:
+                bot_is_sleep = True
+                print('sleeping bot')
+        if death_data == "1":
+            print("turning bot off")
+            sys.exit()
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
