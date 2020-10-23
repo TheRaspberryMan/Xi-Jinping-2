@@ -961,7 +961,7 @@ async def max_color(ctx):
         person_roles = list(person_object.roles)
         await person_roles[-1].edit(colour=discord.Colour.from_rgb(color[0], color[1], color[2]))
     if ctx.message.author.id not in [444258961332502548, 351707203981541378]:
-        await ctx.send(f"YOU'RE NOT COOL ENOUGH TO GET PAST ME {cool_zeggy}\n BULLYS LIKE YOU END UP LIKE HIM {thwomp_zeggy}")
+        # await ctx.send(f"YOU'RE NOT COOL ENOUGH TO GET PAST ME {cool_zeggy}\n BULLYS LIKE YOU END UP LIKE HIM {thwomp_zeggy}")
 
 @bot.command()
 async def read_gui(ctx):
@@ -1117,4 +1117,4 @@ TOKEN = f.readline()
 TEST_TOKEN = f.readline()
 f.close()
 
-bot.run(str(TEST_TOKEN))
+bot.run(str(TOKEN))
