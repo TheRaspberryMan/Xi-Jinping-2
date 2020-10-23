@@ -250,6 +250,8 @@ async def on_ready():
     global product_exists
     global gaming_cam
     gaming_cam = discord.utils.get(guild.members, id=239150965217820672)
+    global jackson
+    jackson = discord.utils.get(guild.members, id=551593940957003778)
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
     global gaming_cam_rol
     for roel in guild.roles:
@@ -289,7 +291,8 @@ async def on_ready():
     ninja_zeggy = discord.utils.get(guild.emojis, name='Zinja')
     global thwomp_zeggy
     thwomp_zeggy = discord.utils.get(guild.emojis, name='Thweggy')
-
+    global read_json
+    read_json = False
     # generates json
     # for member in guild.members:
     #     add_member_to_json(member)
@@ -360,7 +363,7 @@ async def on_message(message):
             else:
                 messages = 0
             
-            if messages > 4 or "@everyone" in message.content:
+            if messages > 4 or "@everyone" in message.content or "BIGGEST WIGGLE" in str(message.content.upper()):
                 
                 # gets the users current offences
                 current_offences = offences[str(author.id)][0] + 1
@@ -959,11 +962,20 @@ async def max_color(ctx):
         await person_roles[-1].edit(colour=discord.Colour.from_rgb(color[0], color[1], color[2]))
     else:
         await ctx.send(f"YOU'RE NOT COOL ENOUGH TO GET PAST ME {cool_zeggy}\n BULLYS LIKE YOU END UP LIKE HIM {thwomp_zeggy}")
+
+@bot.command()
+async def read_gui(ctx):
+    global read_json
+    if ctx.message.author.id == 239150965217820672:
+        if read_json:
+            read_json = False
+        else:
+            read_json = True
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #LOOP
 
 # lowers offences and unmutes people (checks every 30 seconds)           
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=5)
 async def manage_offences():
     global bot_is_sleep
     if bot_is_sleep == False:
@@ -1068,22 +1080,31 @@ async def change_colors():
 @tasks.loop(seconds=1)
 async def json_interface():
     global bot_is_sleep
-    with open("test.json", 'r') as data_file:
-        data = json.load(data_file)
-        datadict = data["data"]
-        bot_is_sleep_data = datadict['bot_is_sleep']
-        death_data = datadict['turn_off']
-        if bot_is_sleep_data == "0":
-            if bot_is_sleep == True:
-                bot_is_sleep = False
-                print('waking bot')
-        if bot_is_sleep_data == "1":
-            if bot_is_sleep == False:
-                bot_is_sleep = True
-                print('sleeping bot')
-        if death_data == "1":
-            print("turning bot off")
-            sys.exit()
+    global read_json
+    if read_json:
+        with open("test.json", 'r') as data_file:
+            data = json.load(data_file)
+            datadict = data["data"]
+            bot_is_sleep_data = datadict['bot_is_sleep']
+            death_data = datadict['turn_off']
+            if bot_is_sleep_data == "0":
+                if bot_is_sleep == True:
+                    bot_is_sleep = False
+                    print('waking bot')
+            if bot_is_sleep_data == "1":
+                if bot_is_sleep == False:
+                    bot_is_sleep = True
+                    print('sleeping bot')
+            if death_data == "1":
+                print("turning bot off")
+                sys.exit()
+
+@tasks.loop(hours=24)
+async def backup_json():
+    with open(user_data_path, 'r') as user_data_file:
+        user_data = json.load(user_data_file)
+    with open("backup_json", 'w') as backup_data_file:       
+        json.dump(user_data, backup_data_file)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
