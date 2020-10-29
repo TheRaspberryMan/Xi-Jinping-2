@@ -11,6 +11,7 @@ from os import path
 from PIL import Image
 from io import BytesIO
 from requests import get
+import launchlibrary as ll
 from time import sleep, time
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -27,6 +28,7 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 
 # instance of the trivia api wrapper library class
 client = OpenTDBClient()
+api = ll.Api()
 
 
 # Has role id for each person, none means change noothing, and true means you can give this person a role then has their user id
@@ -301,7 +303,7 @@ async def on_ready():
 
     manage_offences.start()
     json_interface.start()
-
+    launch_api.start()
     print("I'm ready to ping some pongs\n")
 
 #event command for xp and muting
@@ -961,7 +963,8 @@ async def max_color(ctx):
         person_roles = list(person_object.roles)
         await person_roles[-1].edit(colour=discord.Colour.from_rgb(color[0], color[1], color[2]))
     if ctx.message.author.id not in [444258961332502548, 351707203981541378]:
-        # await ctx.send(f"YOU'RE NOT COOL ENOUGH TO GET PAST ME {cool_zeggy}\n BULLYS LIKE YOU END UP LIKE HIM {thwomp_zeggy}")
+        print('poge')
+        await ctx.send(f"YOU'RE NOT COOL ENOUGH TO GET PAST ME {cool_zeggy}\n BULLYS LIKE YOU END UP LIKE HIM {thwomp_zeggy}")
 
 @bot.command()
 async def read_gui(ctx):
@@ -1105,6 +1108,13 @@ async def backup_json():
         user_data = json.load(user_data_file)
     with open("backup_json", 'w') as backup_data_file:       
         json.dump(user_data, backup_data_file)
+
+@tasks.loop(seconds=30)
+async def launch_api():
+    next_5_go_launches = api.next_launches(5) # get the next 5 launches in json format
+    print(next_5_go_launches)
+    with open("launches.json", 'w') as launch_json:       
+        json.dump(next_5_go_launches, launch_json)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
