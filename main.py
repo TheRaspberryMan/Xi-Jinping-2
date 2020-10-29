@@ -11,7 +11,6 @@ from os import path
 from PIL import Image
 from io import BytesIO
 from requests import get
-import launchlibrary as ll
 from time import sleep, time
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -303,7 +302,6 @@ async def on_ready():
 
     manage_offences.start()
     json_interface.start()
-    launch_api.start()
     print("I'm ready to ping some pongs\n")
 
 #event command for xp and muting
@@ -1108,13 +1106,6 @@ async def backup_json():
         user_data = json.load(user_data_file)
     with open("backup_json", 'w') as backup_data_file:       
         json.dump(user_data, backup_data_file)
-
-@tasks.loop(seconds=30)
-async def launch_api():
-    next_5_go_launches = api.next_launches(5) # get the next 5 launches in json format
-    print(next_5_go_launches)
-    with open("launches.json", 'w') as launch_json:       
-        json.dump(next_5_go_launches, launch_json)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
