@@ -28,7 +28,7 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 # instance of the trivia api wrapper library class
 client = OpenTDBClient()
 
-jekdicfhdjdbejk
+
 # Has role id for each person, none means change noothing, and true means you can give this person a role then has their user id
 perm_votes = {
     "THUMB UP FOR YES THUMB DOWN FOR NO (BUT DON'T BE MEAN SO NOONE LOOSES KARMA)" : None,
