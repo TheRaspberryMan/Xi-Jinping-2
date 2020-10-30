@@ -28,6 +28,7 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 # instance of the trivia api wrapper library class
 client = OpenTDBClient()
 
+jekdicfhdjdbejk
 # Has role id for each person, none means change noothing, and true means you can give this person a role then has their user id
 perm_votes = {
     "THUMB UP FOR YES THUMB DOWN FOR NO (BUT DON'T BE MEAN SO NOONE LOOSES KARMA)" : None,
@@ -317,7 +318,7 @@ async def on_message(message):
         author = message.author
 
         # loading user data
-        with open(user_data_path, "r") as user_data_file:
+        with open("user_data.json", "r") as user_data_file:
             user_data = json.load(user_data_file)
             xp_dict = user_data['xp']
             offences = user_data['offences']
