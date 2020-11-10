@@ -910,12 +910,8 @@ async def play(ctx, url):
         print("joining")
         if not ctx.message.author.voice:
             await ctx.send("YOU BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
-            return
-        
         else:
-            channel = ctx.message.author.voice.channel
-
-        await channel.connect()
+            await ctx.message.author.voice.channel.connect()
 
         server = ctx.message.guild
         voice_channel = server.voice_client
