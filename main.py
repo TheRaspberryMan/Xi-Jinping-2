@@ -69,8 +69,6 @@ bot.remove_command('help')
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-user_data_path = 'user_data.json'
-
 last_quote = 0
 
 ytdl_format_options = {
@@ -122,7 +120,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 def add_member_to_json(member):
 
     # loads the data
-    with open(user_data_path, 'r') as user_data_file:
+    with open("user_data.json", 'r') as user_data_file:
         user_data = json.load(user_data_file)
         money_dict = user_data['money']
 
@@ -133,7 +131,7 @@ def add_member_to_json(member):
         if str(member.id) not in user_data[key]:
             user_data[key][str(member.id)] = [0, 0]
 
-    with open(user_data_path, 'w') as user_data_file:       
+    with open("user_data.json", 'w') as user_data_file:       
         json.dump(user_data, user_data_file)
 
 # takes member to have their balance changed, the amount to add or remove, 
@@ -143,7 +141,7 @@ async def change_ping_bucks(member_id, amount, channel, add_or_remove):
 
     
     # loads the data
-    with open(user_data_path, 'r') as user_data_file:
+    with open("user_data.json", 'r') as user_data_file:
         user_data = json.load(user_data_file)
         user_money = user_data['money']
 
@@ -151,7 +149,7 @@ async def change_ping_bucks(member_id, amount, channel, add_or_remove):
     user_money[str(member_id)] += amount if add_or_remove else -amount
 
     # changes the json
-    with open(user_data_path, 'w') as user_data_file:
+    with open("user_data.json", 'w') as user_data_file:
         json.dump(user_data, user_data_file)
     
     # informs the user what happend
@@ -176,7 +174,7 @@ async def on_member_join(member):
     holy_role = discord.utils.get(member.guild.roles, id=739594604168347789)
 
     # loads data
-    with open(user_data_path, 'r') as user_roles_file:
+    with open("user_data.json", 'r') as user_roles_file:
             user_data = json.load(user_roles_file)
             user_roles = user_data['roles']
     
@@ -199,7 +197,7 @@ async def on_member_join(member):
         user_roles.pop(user, None)
 
     # changes the data
-    with open(user_data_path, 'w') as user_roles_file:
+    with open("user_data.json", 'w') as user_roles_file:
         json.dump(user_data, user_roles_file)
     for users in guild.members:
         user_count += 1
@@ -210,7 +208,7 @@ async def on_member_join(member):
 async def on_member_remove(member):
 
     # loads data 
-    with open(user_data_path, 'r') as user_data_file:
+    with open("user_data.json", 'r') as user_data_file:
         user_data = json.load(user_data_file)
         user_roles = user_data['roles']
 
@@ -218,7 +216,7 @@ async def on_member_remove(member):
     user_roles[member.id] =[role.id for role in member.roles if role.id != 739522722169618516]
 
     # changes the file
-    with open(user_data_path, 'w') as user_data_file:
+    with open("user_data.json", 'w') as user_data_file:
         json.dump(user_data, user_data_file)
 
     await joins_and_leaves_channel.send(f"{member.name} has left, how dismal")
@@ -249,17 +247,9 @@ async def on_ready():
     global last_time
     global product_exists
     global gaming_cam
-    gaming_cam = discord.utils.get(guild.members, id=239150965217820672)
     global jackson
     jackson = discord.utils.get(guild.members, id=551593940957003778)
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
-    global gaming_cam_rol
-    for roel in guild.roles:
-        # print(roel)
-        # print(roel.id)
-        if roel.id == 739680352993280001:
-            gaming_cam_rol = roel
-
     product_exists = False
     messages = 0
     last_author = ''
@@ -338,12 +328,12 @@ async def on_message(message):
         
             #ping balance
             if str(message.content.upper()) in ["!PING BUX", "!PING BAL", "!BAL"]:
-                with open(user_data_path, 'r') as user_data_file:
+                with open("user_data.json", 'r') as user_data_file:
                     await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
 
             #ping level
             if str(message.content.upper()) in ["!PING LEVEL", "!LEVEL"]:
-                with open(user_data_path, 'r') as user_data_file:
+                with open("user_data.json", 'r') as user_data_file:
                     poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
                     await message.channel.send(f"you are level {poggers_level - 1}")
 
@@ -383,7 +373,7 @@ async def on_message(message):
                 
                 offences[str(author.id)] = [current_offences, mute_time]
 
-                with open(user_data_path, 'w') as user_data_file:
+                with open("user_data.json", 'w') as user_data_file:
                     json.dump(user_data, user_data_file)
 
                 with open('user_data.json', 'r') as user_data_file:
@@ -399,7 +389,7 @@ async def on_message(message):
                     await message.channel.send(f"WOW you just increased you ping level to {level}")
                 
                 xp_and_level[str(author.id)][0] += 1
-                with open(user_data_path, 'w') as user_data_file:
+                with open("user_data.json", 'w') as user_data_file:
                     json.dump(user_data, user_data_file)
 
                 # makes it so commands still work
@@ -418,15 +408,15 @@ async def on_message(message):
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #CLIENT COMMANDS
 
-# #vote initate command
-# @bot.command()
-# async def init_vote(ctx):
-#     await ctx.send("voting subject")
-#     voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-#     await ctx.send("time to vote (hours)")
-#     voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
-#     await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
-#     #add json to store votes and what people voted, also add a voting commadd
+#vote initate command
+@bot.command()
+async def init_vote(ctx):
+    await ctx.send("voting subject")
+    voting_subject = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+    await ctx.send("time to vote (hours)")
+    voting_time = await bot.wait_for('message', check=lambda x: x.author == ctx.message.author)
+    await announcments_channel.send(f"A VOTE HAS BEEN INITIATED. VOTE USING THE VOTE CHANNEL, THE SUBJECT OF THIS VOTE IS {voting_subject.content.upper()} YOU HAVE {voting_time.content} HOURS TO VOTE VOTE Y/N IN THE VOTING CHANNEL")
+    #add json to store votes and what people voted, also add a voting commadd
 
 #toggles bot sleep
 @bot.command()
@@ -507,7 +497,7 @@ async def quote(ctx):
             await ctx.send(quotes[str(quote_to_use)])
             quotes["19"] = last_quote
             user_data["quotes"] = quotes
-            with open(user_data_path, 'w') as user_data_file:
+            with open("user_data.json", 'w') as user_data_file:
                 json.dump(user_data, user_data_file)
         else:
             await ctx.send(f"Unfortunatley, my quote reservoir has run dry, come back in a soon. {sad_zeggy}")
@@ -533,7 +523,7 @@ async def market(ctx,*,request):
         request = request.split(' ')
         market_function = request[0]
         product_exists == False
-        with open(user_data_path, 'r') as user_data_file:
+        with open("user_data.json", 'r') as user_data_file:
             user_data = json.load(user_data_file)
             market_products = user_data['market products']
             money_dict = user_data['money']
@@ -557,7 +547,7 @@ async def market(ctx,*,request):
                                 await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
                                 money_dict[str(ctx.message.author.id)] -= cost
                                 user_inventory[request[1]] += int(quantity_to_buy)
-                                with open(user_data_path, 'w') as user_data_file:
+                                with open("user_data.json", 'w') as user_data_file:
                                     json.dump(user_data, user_data_file)
                             else:
                                 await ctx.send(f"@Zeggy give me a line here $@# {quantity_to_buy} {request[1].upper()}")
@@ -574,7 +564,7 @@ async def market(ctx,*,request):
                                 await ctx.send(f"{quantity_to_buy} {request[1]}s were added to your inventory")
                                 money_dict[str(ctx.message.author.id)] -= cost
                                 user_inventory[request[1]] += int(quantity_to_buy)
-                                with open(user_data_path, 'w') as user_data_file:
+                                with open("user_data.json", 'w') as user_data_file:
                                     json.dump(user_data, user_data_file)
                             else:
                                 await ctx.send(f"@Zeggy give me a line here ($# {quantity_to_buy} {request[1].upper()}")
@@ -600,7 +590,7 @@ async def market(ctx,*,request):
                                 await ctx.send(f"{quantity_to_sell} {request[1]} was removed from your inventory")
                                 money_dict[str(ctx.message.author.id)] += cost
                                 user_inventory[request[1]] -= int(quantity_to_sell)
-                                with open(user_data_path, 'w') as user_data_file:
+                                with open("user_data.json", 'w') as user_data_file:
                                     json.dump(user_data, user_data_file)
                             else:
                                 await ctx.send("@Zeggy give me a line here $@#")
@@ -618,7 +608,7 @@ async def market(ctx,*,request):
                                 await ctx.send(f"{quantity_to_sell} {request[1]}s were removed from your inventory")
                                 money_dict[str(ctx.message.author.id)] += cost
                                 user_inventory[request[1]] -= int(quantity_to_sell)
-                                with open(user_data_path, 'w') as user_data_file:
+                                with open("user_data.json", 'w') as user_data_file:
                                     json.dump(user_data, user_data_file)
                             else:
                                 await ctx.send("@Zeggy give me a line here $@#")
@@ -631,7 +621,7 @@ async def market(ctx,*,request):
 async def quantity(ctx,*,request):
     if bot_is_sleep == False:
         request = request.split(' ')
-        with open(user_data_path, 'r') as user_data_file:
+        with open("user_data.json", 'r') as user_data_file:
             user_data = json.load(user_data_file)
             user_inventories = user_data['user inventories']
             user_inventory = user_inventories[str(ctx.message.author.id)]
@@ -724,7 +714,7 @@ async def view_json(ctx):
 @bot.command()
 async def ping_bal(ctx):
     if bot_is_sleep == False:
-        with open(user_data_path, 'r') as user_data_file:
+        with open("user_data.json", 'r') as user_data_file:
             await ctx.send(f"you have {json.load(user_data_file)['money'][str(ctx.message.author.id)]} ping bucks in your ping bank account")
 
 #trivia
@@ -979,18 +969,16 @@ async def read_gui(ctx):
 async def manage_offences():
     global bot_is_sleep
     if bot_is_sleep == False:
-        global muterole
-        global gaming_cam_rol
-
         # perms = discord.Permissions(manage_channels=True, manage_roles=True)
         # await guild.create_role(name='poggerss', permissions=perms)
         # channel_role = discord.utils.get(guild.roles, name='poggerss')
-        for member in guild.members:
-            if member.id == 239150965217820672:
-                await member.add_roles(gaming_cam_rol)
+        # for member in guild.members:
+        #     if member.id == 239150965217820672:
+        #         print("poggegers")
+        #         await member.add_roles(botter_role)
 
         # loads the data
-        with open(user_data_path, 'r') as user_data_file:
+        with open("user_data.json", 'r') as user_data_file:
             user_data = json.load(user_data_file)
             offences = user_data['offences']
             
@@ -1018,7 +1006,7 @@ async def manage_offences():
                 print(f'Unmuted {member_to_unmute.name}')
 
         # changes the json
-        with open(user_data_path, 'w') as user_data_file:
+        with open("user_data.json", 'w') as user_data_file:
             json.dump(user_data, user_data_file)
 
 @tasks.loop(hours=12)
@@ -1101,7 +1089,7 @@ async def json_interface():
 
 @tasks.loop(hours=24)
 async def backup_json():
-    with open(user_data_path, 'r') as user_data_file:
+    with open("user_data.json", 'r') as user_data_file:
         user_data = json.load(user_data_file)
     with open("backup_json", 'w') as backup_data_file:       
         json.dump(user_data, backup_data_file)
