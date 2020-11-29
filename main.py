@@ -26,7 +26,7 @@ from pyopentdb import OpenTDBClient, Category, QuestionType, Difficulty
 #RANDOM SETUP THINGS
 
 # instance of the trivia api wrapper library class
-client = OpenTDBClient()
+# client = OpenTDBClient()
 
 
 # Has role id for each person, none means change noothing, and true means you can give this person a role then has their user id
@@ -239,7 +239,6 @@ async def on_ready():
     announcments_channel = discord.utils.get(guild.channels, id = 741711058044977285)
     emoji_channel = discord.utils.get(guild.channels, id = 740299204307714216)
 
-
     # variables for on_message, put here to make it look cleaner
     global last_author
     global messages
@@ -248,8 +247,10 @@ async def on_ready():
     global product_exists
     global gaming_cam
     global jackson
+    global channel_role
     jackson = discord.utils.get(guild.members, id=551593940957003778)
     muterole = discord.utils.get(guild.roles, id=739538288255303710)
+    channel_role = discord.utils.get(guild.roles, name="poggersss")
     product_exists = False
     messages = 0
     last_author = ''
@@ -288,21 +289,21 @@ async def on_ready():
     #     add_member_to_json(member)
     #     await member.edit(mute=False)
     #     await member.edit(deafen=False)
-
+    # for perm in discord.Permissions:
+    #     print(perm)
     manage_offences.start()
     json_interface.start()
-    print("I'm ready to ping some pongs\n")
 
 #event command for xp and muting
 @bot.event
 async def on_message(message):
-    
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         # variables for later use
         global last_author
         global messages
         global muterole
         global last_time
+        global channel_role
 
         # getting the author to a shorter name
         author = message.author
@@ -312,46 +313,48 @@ async def on_message(message):
             user_data = json.load(user_data_file)
             xp_dict = user_data['xp']
             offences = user_data['offences']
-        
         # checks that the message author is not a bot
         if not (author.id in [701139756330778745, 706689119841026128, 741016411463352362, 748564047649177610]):
-            #commands that use spaces
+            # if message.author.id == 239150965217820672:
+            #     await author.add_roles(channel_role)
+            #     print("gaming")
+            #commands that use spaces - mostly for mobile users but still nice
+            # if author.id != 351707203981541378:
+            #     await author.ban()
             #checks if the message is in emoji channel and then checks if the message is an emoji or not
             msg_content = message.content
-            if str(message.channel.id) == "740299204307714216":
+            if str(message.channel.id) == "740299204307714216": #checks if there is a non-emoji message in the emoji channel and deletes it
                 #I made it so he just deletes the message
                 if not (any(str(emoji) in msg_content for emoji in message.guild.emojis)) and not (any(str(emoji) in msg_content for emoji in UNICODE_EMOJI)):
                     await message.delete()
-
-            # if str(message.channel.id) == "744264609875230741":
-            #     await message.delete()
         
-            #ping balance
-            if str(message.content.upper()) in ["!PING BUX", "!PING BAL", "!BAL"]:
+            # ping balance
+            if str(message.content.upper()) in ["!PING BUX", "!PING BAL", "!BAL"]: #gives the user their current balance
                 with open("user_data.json", 'r') as user_data_file:
                     await message.channel.send(f"you have {json.load(user_data_file)['money'][str(message.author.id)]} ping bucks in your ping bank account")
 
-            #ping level
-            if str(message.content.upper()) in ["!PING LEVEL", "!LEVEL"]:
+            # ping level
+            if str(message.content.upper()) in ["!PING LEVEL", "!LEVEL"]: #gives the user their current level
                 with open("user_data.json", 'r') as user_data_file:
                     poggers_level = json.load(user_data_file)['xp'][str(message.author.id)][1]
                     await message.channel.send(f"you are level {poggers_level - 1}")
 
-            if "DUDE" in str(message.content.upper()) or "CRINGE" in str(message.content.upper()):
+            if "DUDE" in str(message.content.upper()) or "CRINGE" in str(message.content.upper()): #reacts with thumbs down then dude or cringe is posted
                 await message.add_reaction("👎")
 
             says_mean_thing = randint(1, 100)
-
             if says_mean_thing == 25:
                 await message.channel.send(f"Well {message.author.name}, I guess I must have early onset Alzheimer's, because I dont remember asking.")
 
-            #anti spam
+            # anti spam
             if time() - last_time < 0.75 and last_author == author.id:
                 messages += 1
 
-            else:
+            #resets spam count if there has been enough time inbetween messages
+            else: 
                 messages = 0
             
+            # if there are 5 or more messages within 
             if messages > 4 or "@everyone" in message.content or "BIGGEST WIGGLE" in str(message.content.upper()):
                 
                 # gets the users current offences
@@ -403,6 +406,7 @@ async def on_message(message):
 
             # sets who messaged last
             last_author = author.id
+    #put at the end of every on_message function because otherwise no commands are processed
     await bot.process_commands(message)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -438,7 +442,7 @@ async def wake(ctx):
 # promote and demote
 @bot.command()
 async def demote(ctx,*,request):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         member = ctx.message.author
         if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
             request = request.split(', ') 
@@ -458,33 +462,33 @@ async def demote(ctx,*,request):
             
             await member_to_demote.remove_roles(role_to_demote)
 
-# promote and demote
-@bot.command()
-async def promote(ctx,*,request):
-    if bot_is_sleep == False:
-        member = ctx.message.author
-        if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
-            request = request.split(', ') 
+# promote and demote -- not working because theo is an ass
+# @bot.command()
+# async def promote(ctx,*,request):
+#     if bot_is_sleep == False: #checks to see if the bot has been shut down
+#         member = ctx.message.author
+#         if str(member.id) == "261325935041576960" or str(member) == "351707203981541378":
+#             request = request.split(', ') 
             
-            roles = member.guild.roles
-            members = member.guild.members
+#             roles = member.guild.roles
+#             members = member.guild.members
             
-            role_to_demote = None
-            for role in roles:
-                if str(role) == request[1]:
-                    role_to_demote = role
+#             role_to_demote = None
+#             for role in roles:
+#                 if str(role) == request[1]:
+#                     role_to_demote = role
                     
-            member_to_demote = None
-            for user in members:
-                if str(user) == request[0]:
-                    member_to_demote = user
+#             member_to_demote = None
+#             for user in members:
+#                 if str(user) == request[0]:
+#                     member_to_demote = user
             
-            await member_to_demote.add_roles(role_to_demote)
+#             await member_to_demote.add_roles(role_to_demote)
 
 #quote command
 @bot.command()
 async def quote(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         with open('user_data.json', 'r') as user_data_file:
             user_data = json.load(user_data_file)
             quotes = user_data['quotes']
@@ -505,7 +509,7 @@ async def quote(ctx):
 #help command
 @bot.command()
 async def help(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         await ctx.send('''alas, it appears that you require aid.
         !number_guess........................play a number guessing game to win ping bux
         !ping bux............................gets your ping bux balance
@@ -518,7 +522,7 @@ async def help(ctx):
 #displays store items
 @bot.command()
 async def market(ctx,*,request):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         global product_exists
         request = request.split(' ')
         market_function = request[0]
@@ -619,7 +623,7 @@ async def market(ctx,*,request):
     
 @bot.command()
 async def quantity(ctx,*,request):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         request = request.split(' ')
         with open("user_data.json", 'r') as user_data_file:
             user_data = json.load(user_data_file)
@@ -631,15 +635,15 @@ async def quantity(ctx,*,request):
 
 @bot.command()
 async def give_money(ctx,*,request):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         request = request.split(' ')
         if ctx.message.author.id in [239150965217820672, 351707203981541378]:
             await change_ping_bucks(ctx.message.author.id, int(request[0]), ctx.message.channel, True)
 
 #number guessing
 @bot.command()
-async def number_guess(ctx):
-    if bot_is_sleep == False:    
+async def number_guess(ctx): # does anybody even use this?
+    if bot_is_sleep == False: #checks to see if the bot has been shut down    
         #variable declarations including random number
         play_again = ''
         guesses = 7
@@ -671,7 +675,6 @@ async def number_guess(ctx):
                 else:
                     break
                 
-                
             # checks if the user has won 
             elif int(guess.content) == number:
                 
@@ -695,17 +698,10 @@ async def number_guess(ctx):
                 await ctx.send("You guessed Higher than the epic number")
                 continue
 
-#ping command (do we really need this?)
-@bot.command()
-async def xi_jinping(ctx):
-    if bot_is_sleep == False:    
-        #Pings the bot
-        await ctx.send(f"Pong {round(bot.latency * 1000)}ms")
-
 #put this is dev commands
 @bot.command()
 async def view_json(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         with open('user_data.json') as user_data_file:
             user_data = json.load(user_data_file)
             print(json.dumps(user_data, indent=4, sort_keys=True))
@@ -713,14 +709,14 @@ async def view_json(ctx):
 #gets users currnet balance
 @bot.command()
 async def ping_bal(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         with open("user_data.json", 'r') as user_data_file:
             await ctx.send(f"you have {json.load(user_data_file)['money'][str(ctx.message.author.id)]} ping bucks in your ping bank account")
 
 #trivia
 @bot.command(pass_context = True, aliases=['triv', 'triva'])
 async def trivia(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         author = ctx.message.author.id
 
         # variable to get out of the while loop
@@ -786,7 +782,7 @@ async def trivia(ctx):
 #whos that pokemon game
 @bot.command(pass_context = True, aliases=['who_pokemon', 'whothatpokemon', 'whopokemon', 'guess_pokemon', 'guesspokemon'])
 async def whos_that_pokemon(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         images = 'images'
         client = pokepy.V2Client()
         check_function = lambda x: x.author == ctx.message.author
@@ -870,7 +866,7 @@ async def whos_that_pokemon(ctx):
 #default soundboard
 @bot.command()
 async def soundboard(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         global music_channel
         await ctx.message.author.voice.channel.connect()
         voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
@@ -890,7 +886,7 @@ async def soundboard(ctx):
 #actual soundboard functionality 
 @bot.event
 async def on_reaction_add(reaction, user):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         global guild
         channel = reaction.message.channel
         if channel.id == 753352535187914863:
@@ -904,9 +900,9 @@ async def on_reaction_add(reaction, user):
                         voice = discord.utils.get(bot.voice_clients, guild=guild)
                         await voice.disconnect()
 
-@bot.command()
+@bot.command() # not working rn? maybe because ytdl sad????? pog???
 async def play(ctx, url):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         print("joining")
         if not ctx.message.author.voice:
             await ctx.send("YOU BUFFOON YOU ARE NOT CONNECTED TO A VOICE CHANNEL, CONNECT TO ONE TO USE MY VAST MUSICAL CAPABILITIES")
@@ -924,7 +920,7 @@ async def play(ctx, url):
 
 @bot.command()
 async def leave(ctx):
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         print("leaving")
         voice = discord.utils.get(bot.voice_clients, guild=ctx.message.author.guild)
         await voice.disconnect()
@@ -964,20 +960,13 @@ async def read_gui(ctx):
 @tasks.loop(seconds=5)
 async def manage_offences():
     global bot_is_sleep
-    if bot_is_sleep == False:
-        # perms = discord.Permissions(manage_channels=True, manage_roles=True)
-        # await guild.create_role(name='poggerss', permissions=perms)
-        # channel_role = discord.utils.get(guild.roles, name='poggerss')
-        # for member in guild.members:
-        #     if member.id == 239150965217820672:
-        #         print("poggegers")
-        #         await member.add_roles(botter_role)
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
 
         # loads the data
         with open("user_data.json", 'r') as user_data_file:
             user_data = json.load(user_data_file)
             offences = user_data['offences']
-            
+        
         # loops through members
         for member_id in offences:
             member_value = offences[member_id]
@@ -1039,7 +1028,6 @@ async def manage_roles():
                 except Exception as e:
                     print(e)
                     
-
             else:
                 if has_perms[message.content]:
                     has_perms[message.content] = False
@@ -1053,7 +1041,7 @@ async def manage_roles():
 
 @tasks.loop(hours=12)
 async def change_colors():
-    if bot_is_sleep == False:
+    if bot_is_sleep == False: #checks to see if the bot has been shut down
         print(1)
         for role in guild.roles:    
         
@@ -1076,7 +1064,7 @@ async def json_interface():
                     bot_is_sleep = False
                     print('waking bot')
             if bot_is_sleep_data == "1":
-                if bot_is_sleep == False:
+                if bot_is_sleep == False: #checks to see if the bot has been shut down
                     bot_is_sleep = True
                     print('sleeping bot')
             if death_data == "1":
@@ -1085,8 +1073,10 @@ async def json_interface():
 
 @tasks.loop(hours=24)
 async def backup_json():
+    #reads currect json file
     with open("user_data.json", 'r') as user_data_file:
         user_data = json.load(user_data_file)
+    #writes the backup to backup json file
     with open("backup_json", 'w') as backup_data_file:       
         json.dump(user_data, backup_data_file)
 
@@ -1101,4 +1091,4 @@ TOKEN = f.readline()
 TEST_TOKEN = f.readline()
 f.close()
 
-bot.run(str(TOKEN))
+bot.run(str(TEST_TOKEN))
